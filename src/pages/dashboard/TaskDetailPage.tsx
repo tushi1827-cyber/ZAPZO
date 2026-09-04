@@ -154,11 +154,17 @@ export function TaskDetailPage() {
       imagePath = uploadedPath;
     }
 
-    const { data: rpcData, error: rpcErr } = await supabase.rpc('submit_task_safe', {
-      p_task_id: id,
-      p_proof_text: proof.trim(),
-      p_proof_image_url: imagePath,
-    });
+    const { data: insertData, error: rpcErr } = await supabase
+      .from('task_submissions')
+      .insert({
+        task_id: id,
+        proof_text: proof.trim(),
+        proof_image_url: imagePath,
+      })
+      .select('id')
+      .single();
+
+    const rpcData = insertData?.id;
 
     setSubmitting(false);
 
