@@ -154,22 +154,37 @@ export function TaskDetailPage() {
       imagePath = uploadedPath;
     }
 
-    const { data: insertData, error: rpcErr } = await supabase
-      .from('task_submissions')
-      .insert({
-        task_id: id,
-        proof_text: proof.trim(),
-        proof_image_url: imagePath,
-      })
-      .select('id')
-      .single();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
 
-    const rpcData = insertData?.id;
+    if (!accessToken) {
+      setSubmitting(false);
+      setError('Authentication required. Please log in again.');
+      return;
+    }
 
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-task`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          task_id: id,
+          proof_text: proof.trim(),
+          proof_image_url: imagePath,
+        }),
+      },
+    );
+
+    const result = await response.json();
     setSubmitting(false);
 
-    if (rpcErr) {
-      const msg = rpcErr.message || '';
+    if (!response.ok) {
+      const msg = result.error || result.raw || '';
       if (msg.includes('already been approved')) {
         setError('Your submission for this task has already been approved.');
       } else if (msg.includes('pending submission')) {
@@ -190,13 +205,7 @@ export function TaskDetailPage() {
       return;
     }
 
-    const newId = rpcData as string;
-    const { data: subData } = await supabase
-      .from('task_submissions')
-      .select('*')
-      .eq('id', newId)
-      .maybeSingle();
-    setSubmission(subData as TaskSubmission);
+    setSubmission(result.submission as TaskSubmission);
     setSuccess(true);
     handleRemoveImage();
     setProof('');
