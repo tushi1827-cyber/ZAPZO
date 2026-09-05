@@ -284,7 +284,14 @@ function AdminProofImage({ path }: { path: string }) {
   useEffect(() => {
     let revoked = false;
     (async () => {
-      const { data, error } = await supabase.storage.from('task-proofs').createSignedUrl(path, 3600);
+      const result = await supabase.storage.from('task-proofs').createSignedUrl(path, 3600);
+      console.log('PROOF IMAGE DEBUG', {
+        supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
+        path,
+        data: result.data,
+        error: result.error,
+      });
+      const { data, error } = result;
       if (revoked) return;
       if (error || !data?.signedUrl) {
         setError(true);
