@@ -30,16 +30,34 @@ export function AdminSubmissionsPage() {
 
   const loadSubs = async () => {
     setLoading(true);
+    setError('');
     let query = supabase
       .from('task_submissions')
-      .select('*, task:tasks(title, reward, category), user:profiles!user_id(name, referral_code)')
+      .select('*, task:tasks(title, reward, category)')
       .order('created_at', { ascending: false });
     if (filter !== 'all') {
       query = query.eq('status', filter);
     }
     const { data, error } = await query.limit(100);
-    if (error) setError('Failed to load submissions.');
-    setSubs((data as SubWithRelations[]) || []);
+    if (error) {
+      setError('Failed to load submissions.');
+      setSubs([]);
+      setLoading(false);
+      return;
+    }
+    const submissions = (data as SubWithRelations[]) || [];
+    const userIds = [...new Set(submissions.map((s) => s.user_id).filter(Boolean))];
+    const profileMap: Record<string, { name: string; referral_code: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, referral_code')
+        .in('id', userIds);
+      for (const p of profiles || []) {
+        profileMap[p.id] = { name: p.name, referral_code: p.referral_code };
+      }
+    }
+    setSubs(submissions.map((s) => ({ ...s, user: profileMap[s.user_id] })));
     setLoading(false);
   };
 
