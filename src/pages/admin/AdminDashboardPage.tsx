@@ -57,7 +57,7 @@ export function AdminDashboardPage() {
         supabase.from('withdrawals').select('amount').eq('status', 'pending'),
         supabase.from('withdrawals').select('amount').eq('status', 'paid'),
         supabase.from('task_submissions').select('id, status, created_at, task:tasks(title), user:profiles!user_id(name)').order('created_at', { ascending: false }).limit(5),
-        supabase.from('withdrawals').select('id, amount, status, created_at, user:profiles!user_id(name)').order('created_at', { ascending: false }).limit(5),
+        supabase.from('withdrawals').select('id, amount, status, created_at, user_id').order('created_at', { ascending: false }).limit(5),
       ]);
       if (users.error || tasks.error || txns.error) {
         setError('Failed to load dashboard statistics. Some data may be incomplete.');
@@ -82,7 +82,20 @@ export function AdminDashboardPage() {
         totalUserBalances: totalRewards + referralRewards - paidWithdrawalAmount - pendingWithdrawalAmount,
       });
       setRecentSubs(recentS.data || []);
-      setRecentWds(recentW.data || []);
+
+      const recentWdData = (recentW.data || []) as any[];
+      const wdUserIds = [...new Set(recentWdData.map((w) => w.user_id).filter(Boolean))];
+      const wdProfileMap: Record<string, { name: string }> = {};
+      if (wdUserIds.length > 0) {
+        const { data: wdProfiles } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', wdUserIds);
+        for (const p of wdProfiles || []) {
+          wdProfileMap[p.id] = { name: p.name };
+        }
+      }
+      setRecentWds(recentWdData.map((w) => ({ ...w, user: wdProfileMap[w.user_id] })));
       setLoading(false);
     })();
   }, []);

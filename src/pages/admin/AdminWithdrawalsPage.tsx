@@ -31,16 +31,34 @@ export function AdminWithdrawalsPage() {
 
   const load = async () => {
     setLoading(true);
+    setError('');
     let query = supabase
       .from('withdrawals')
-      .select('*, user:profiles!user_id(name, referral_code)')
+      .select('*')
       .order('created_at', { ascending: false });
     if (filter !== 'all') {
       query = query.eq('status', filter);
     }
     const { data, error } = await query.limit(100);
-    if (error) setError(`Failed to load withdrawals: ${error.code ?? 'no code'} — ${error.message}${error.details ? ` | details: ${error.details}` : ''}${error.hint ? ` | hint: ${error.hint}` : ''}`);
-    setWithdrawals((data as WdWithUser[]) || []);
+    if (error) {
+      setError('Failed to load withdrawals.');
+      setWithdrawals([]);
+      setLoading(false);
+      return;
+    }
+    const items = (data as WdWithUser[]) || [];
+    const userIds = [...new Set(items.map((w) => w.user_id).filter(Boolean))];
+    const profileMap: Record<string, { name: string; referral_code: string }> = {};
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, name, referral_code')
+        .in('id', userIds);
+      for (const p of profiles || []) {
+        profileMap[p.id] = { name: p.name, referral_code: p.referral_code };
+      }
+    }
+    setWithdrawals(items.map((w) => ({ ...w, user: profileMap[w.user_id] })));
     setLoading(false);
   };
 
