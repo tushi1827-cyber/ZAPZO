@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Feedback';
 import { StatusBadge } from '@/components/ui/Badge';
 import { AdminPageWrapper } from '@/components/AdminLayout';
+import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 const formatMoney = (n: number) =>
@@ -89,6 +90,8 @@ export function AdminDashboardPage() {
 
   if (loading) return <Spinner size="lg" className="py-20" />;
 
+  const { user, profile } = useAuth();
+
   const statCards = [
     { label: 'Total Users', value: stats!.totalUsers, icon: Users, tone: 'bg-brand-600/15 text-brand-400' },
     { label: 'Active Users', value: stats!.activeUsers, icon: Users, tone: 'bg-success-500/15 text-success-400' },
@@ -109,6 +112,17 @@ export function AdminDashboardPage() {
   return (
     <AdminPageWrapper title="Admin Dashboard" subtitle="Platform overview and quick actions.">
       {error && <div className="rounded-xl bg-danger-500/10 p-3 text-sm text-danger-400">{error}</div>}
+
+      {/* TEMP DEBUG BOX — remove after verification */}
+      <div className="rounded-xl border border-warning-500/40 bg-warning-500/10 p-4">
+        <p className="mb-2 text-xs font-bold uppercase tracking-wide text-warning-400">Temp Debug — Admin Session Info</p>
+        <div className="space-y-1 font-mono text-sm text-ink-50">
+          <p><span className="text-ink-400">Admin User ID:</span> {user?.id ?? 'N/A'}</p>
+          <p><span className="text-ink-400">Admin Email:</span> {user?.email ?? 'N/A'}</p>
+          <p><span className="text-ink-400">JWT app_metadata.is_admin:</span> {String(user?.app_metadata?.is_admin ?? 'undefined')}</p>
+          <p><span className="text-ink-400">Profile is_admin:</span> {String(profile?.is_admin ?? 'undefined')}</p>
+        </div>
+      </div>
 
       {/* Quick action alerts */}
       <div className="grid gap-4 sm:grid-cols-2">

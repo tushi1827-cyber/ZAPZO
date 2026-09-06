@@ -40,27 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      // TEMP DEBUG — remove after verification
-      const u = data.session?.user;
-      console.log('[TEMP AUTH DEBUG]', {
-        userId: u?.id,
-        email: u?.email,
-        app_metadata: u?.app_metadata,
-        app_metadata_is_admin: u?.app_metadata?.is_admin,
-        profile_is_admin: undefined,
-        hasSession: !!data.session,
-      });
       setSession(data.session);
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
-        loadProfile(data.session.user.id).then(() => {
-          if (!mounted) return;
-          // log profile.is_admin after it loads
-          supabase.from('profiles').select('is_admin').eq('id', data.session!.user.id).maybeSingle()
-            .then(({ data: p }) => {
-              console.log('[TEMP AUTH DEBUG profile]', { profile_is_admin: p?.is_admin });
-            });
-        }).finally(() => mounted && setLoading(false));
+        loadProfile(data.session.user.id).finally(() => mounted && setLoading(false));
       } else {
         setLoading(false);
       }
