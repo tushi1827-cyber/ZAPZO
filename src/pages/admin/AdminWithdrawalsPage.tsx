@@ -39,7 +39,7 @@ export function AdminWithdrawalsPage() {
       query = query.eq('status', filter);
     }
     const { data, error } = await query.limit(100);
-    if (error) setError('Failed to load withdrawals.');
+    if (error) setError(`Failed to load withdrawals: ${error.code ?? 'no code'} — ${error.message}${error.details ? ` | details: ${error.details}` : ''}${error.hint ? ` | hint: ${error.hint}` : ''}`);
     setWithdrawals((data as WdWithUser[]) || []);
     setLoading(false);
   };
