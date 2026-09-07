@@ -165,7 +165,9 @@ export type NotificationType =
   | 'submission_approved'
   | 'submission_rejected'
   | 'success'
-  | 'danger';
+  | 'danger'
+  | 'support_reply'
+  | 'ticket_status_changed';
 
 export interface Notification {
   id: string;
@@ -223,4 +225,50 @@ export interface DashboardStats {
   tasksCompleted: number;
   qualifiedReferrals: number;
   totalWithdrawals: number;
+}
+
+export type TicketCategory =
+  | 'task_issue'
+  | 'payment_reward'
+  | 'withdrawal'
+  | 'account'
+  | 'referral'
+  | 'technical'
+  | 'other';
+
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+
+export interface SupportTicket {
+  id: string;
+  ticket_number: string;
+  user_id: string;
+  category: TicketCategory;
+  subject: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  created_at: string;
+  updated_at: string;
+  profile?: { name: string; referral_code: string };
+}
+
+export interface TicketMessage {
+  id: string;
+  ticket_id: string;
+  sender_id: string;
+  sender_type: 'user' | 'admin';
+  body: string;
+  attachment_url: string | null;
+  is_internal_note: boolean;
+  created_at: string;
+}
+
+export interface TicketActivityLog {
+  id: string;
+  ticket_id: string;
+  actor_id: string | null;
+  action: string;
+  old_value: string | null;
+  new_value: string | null;
+  created_at: string;
 }

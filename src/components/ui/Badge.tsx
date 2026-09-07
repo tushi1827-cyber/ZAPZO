@@ -29,6 +29,20 @@ export function StatusBadge({ status }: { status: string }) {
     paused: 'info',
     draft: 'neutral',
     processing: 'info',
+    open: 'info',
+    in_progress: 'warning',
+    resolved: 'success',
+    closed: 'neutral',
   };
   return <Badge tone={map[status] ?? 'neutral'}>{status}</Badge>;
+}
+
+export function PriorityBadge({ priority }: { priority: string }) {
+  const map: Record<string, Tone> = {
+    low: 'neutral',
+    medium: 'info',
+    high: 'warning',
+    urgent: 'danger',
+  };
+  return <Badge tone={map[priority] ?? 'neutral'}>{priority}</Badge>;
 }

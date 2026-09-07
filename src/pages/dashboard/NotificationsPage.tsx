@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Bell, CheckCircle2, XCircle, Banknote, Clock, Gift, Wallet,
   CheckCheck, Trash2, ExternalLink, Send, ArrowDownToLine, Users, Sparkles,
+  LifeBuoy, MessageCircle,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -26,6 +27,8 @@ const typeIcon: Record<string, typeof Bell> = {
   referral_reward: Users,
   referral_qualified: Users,
   wallet_adjustment: Wallet,
+  support_reply: MessageCircle,
+  ticket_status_changed: LifeBuoy,
   success: CheckCircle2,
   danger: XCircle,
 };
@@ -45,6 +48,8 @@ const typeTone: Record<string, 'success' | 'danger' | 'warning' | 'brand' | 'inf
   referral_reward: 'brand',
   referral_qualified: 'brand',
   wallet_adjustment: 'info',
+  support_reply: 'brand',
+  ticket_status_changed: 'info',
   success: 'success',
   danger: 'danger',
 };

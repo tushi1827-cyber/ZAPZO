@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ClipboardList, Wallet, Users, ArrowDownToLine,
   Menu, X, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
   CheckCircle2, XCircle, Banknote, Clock, Gift, Send, Sparkles,
-  CheckCheck, ExternalLink,
+  CheckCheck, ExternalLink, LifeBuoy, MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -19,6 +19,7 @@ const navItems = [
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
   { to: '/dashboard/withdraw', label: 'Withdraw', icon: ArrowDownToLine },
   { to: '/dashboard/profile', label: 'Profile', icon: SettingsIcon },
+  { to: '/dashboard/support', label: 'Help & Support', icon: LifeBuoy },
   { to: '/dashboard/notifications', label: 'Notifications', icon: Bell },
 ];
 
@@ -37,6 +38,8 @@ const typeIcon: Record<string, typeof Bell> = {
   referral_reward: Users,
   referral_qualified: Users,
   wallet_adjustment: Wallet,
+  support_reply: MessageCircle,
+  ticket_status_changed: LifeBuoy,
   success: CheckCircle2,
   danger: XCircle,
 };
@@ -64,6 +67,8 @@ const typeTone: Record<string, string> = {
   referral_reward: 'brand',
   referral_qualified: 'brand',
   wallet_adjustment: 'info',
+  support_reply: 'brand',
+  ticket_status_changed: 'info',
   success: 'success',
   danger: 'danger',
 };

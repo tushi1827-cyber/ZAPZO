@@ -24,6 +24,8 @@ const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage').then(
 const WithdrawPage = lazy(() => import('@/pages/dashboard/WithdrawPage').then(m => ({ default: m.WithdrawPage })));
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
+const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
+const TicketDetailPage = lazy(() => import('@/pages/dashboard/TicketDetailPage').then(m => ({ default: m.TicketDetailPage })));
 
 const AdminLayout = lazy(() => import('@/components/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
@@ -36,6 +38,8 @@ const AdminTransactionsPage = lazy(() => import('@/pages/admin/AdminTransactions
 const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage').then(m => ({ default: m.AdminSettingsPage })));
 const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage').then(m => ({ default: m.AdminAuditLogsPage })));
 const AdminFraudPage = lazy(() => import('@/pages/admin/AdminFraudPage').then(m => ({ default: m.AdminFraudPage })));
+const AdminSupportPage = lazy(() => import('@/pages/admin/AdminSupportPage').then(m => ({ default: m.AdminSupportPage })));
+const AdminTicketDetailPage = lazy(() => import('@/pages/admin/AdminTicketDetailPage').then(m => ({ default: m.AdminTicketDetailPage })));
 
 const TermsPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.PrivacyPage })));
@@ -89,6 +93,8 @@ export default function App() {
                 <Route path="withdraw" element={<WithdrawPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="support" element={<DashboardSupportPage />} />
+                <Route path="support/:id" element={<TicketDetailPage />} />
               </Route>
 
               {/* Admin panel (protected + admin) */}
@@ -103,6 +109,8 @@ export default function App() {
                 <Route path="settings" element={<AdminSettingsPage />} />
                 <Route path="audit-logs" element={<AdminAuditLogsPage />} />
                 <Route path="fraud" element={<AdminFraudPage />} />
+                <Route path="support" element={<AdminSupportPage />} />
+                <Route path="support/:id" element={<AdminTicketDetailPage />} />
               </Route>
 
               {/* Fallback */}

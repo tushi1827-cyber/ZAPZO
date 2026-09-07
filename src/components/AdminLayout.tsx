@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   Shield, Users, ClipboardList, FileCheck, ArrowDownToLine, Share2,
   Wallet, Settings as SettingsIcon, LayoutDashboard, Menu, X, LogOut, ScrollText,
-  ShieldAlert,
+  ShieldAlert, Headset,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -19,6 +19,7 @@ const navItems = [
   { to: '/admin/settings', label: 'Settings', icon: SettingsIcon },
   { to: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
   { to: '/admin/fraud', label: 'Fraud & Abuse', icon: ShieldAlert },
+  { to: '/admin/support', label: 'Support Tickets', icon: Headset },
 ];
 
 export function AdminLayout() {
