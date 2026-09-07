@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowDownToLine, Wallet, CheckCircle2, AlertCircle, Clock,
-  Info, Smartphone, Building2, Gift, Mail, Check,
+  Info, Gift, Mail, Check,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -12,24 +12,27 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod, Settings, GiftCardDenomination } from '@/types';
+import { PaymentIcon, PaymentIconType } from '@/components/PaymentMethodIcons';
 
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const UPI_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
 
 interface PaymentMethodOption {
   value: WithdrawalMethod;
   label: string;
   description: string;
-  icon: typeof Smartphone;
+  iconType: PaymentIconType;
   isGiftCard: boolean;
 }
 
 const PAYMENT_METHODS: PaymentMethodOption[] = [
-  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', icon: Smartphone, isGiftCard: false },
-  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', icon: Building2, isGiftCard: false },
-  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', icon: Gift, isGiftCard: true },
-  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', icon: Gift, isGiftCard: true },
-  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', icon: Gift, isGiftCard: true },
+  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', iconType: 'upi', isGiftCard: false },
+  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', iconType: 'bank', isGiftCard: false },
+  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', iconType: 'amazon', isGiftCard: true },
+  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', iconType: 'flipkart', isGiftCard: true },
+  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', iconType: 'google_play', isGiftCard: true },
 ];
 
 const GIFT_CARD_PROVIDERS: WithdrawalMethod[] = ['amazon_gift_card', 'flipkart_gift_card', 'google_play_gift_card'];
@@ -43,6 +46,11 @@ function methodLabel(m: WithdrawalMethod): string {
   return found ? found.label : m.replace('_', ' ');
 }
 
+function methodIconType(m: WithdrawalMethod): PaymentIconType {
+  const found = PAYMENT_METHODS.find((p) => p.value === m);
+  return found ? found.iconType : 'bank';
+}
+
 export function WithdrawPage() {
   const { user, profile } = useAuth();
   const [balance, setBalance] = useState(0);
@@ -54,6 +62,7 @@ export function WithdrawPage() {
   const [amount, setAmount] = useState('');
   const [selectedDenominationId, setSelectedDenominationId] = useState<string | null>(null);
   const [upiId, setUpiId] = useState('');
+  const [upiError, setUpiError] = useState('');
   const [accountHolder, setAccountHolder] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
   const [ifscCode, setIfscCode] = useState('');
@@ -100,12 +109,22 @@ export function WithdrawPage() {
     [denominations, method],
   );
 
-  // When method changes, reset method-specific state
   const handleMethodChange = (m: WithdrawalMethod) => {
     setMethod(m);
     setSelectedDenominationId(null);
     setAmount('');
     setError('');
+    setUpiError('');
+  };
+
+  const handleUpiChange = (value: string) => {
+    const trimmed = value.trim();
+    setUpiId(trimmed);
+    if (trimmed && !UPI_REGEX.test(trimmed)) {
+      setUpiError('Enter a valid UPI ID, e.g. name@upi');
+    } else {
+      setUpiError('');
+    }
   };
 
   const handleDenominationSelect = (d: GiftCardDenomination) => {
@@ -116,17 +135,6 @@ export function WithdrawPage() {
     setSelectedDenominationId(d.id);
     setAmount(String(d.value));
     setError('');
-  };
-
-  const buildPayoutDetails = (): string => {
-    if (method === 'upi') {
-      return `UPI ID: ${upiId.trim()}`;
-    }
-    if (method === 'bank_transfer') {
-      return `Account Holder: ${accountHolder.trim()}\nAccount Number: ${accountNumber.trim()}\nIFSC Code: ${ifscCode.trim()}\nBank Name: ${bankName.trim()}`;
-    }
-    // Gift cards
-    return `Email: ${giftCardEmail.trim()}`;
   };
 
   const validateForm = (): { valid: boolean; amt: number; details: string } => {
@@ -170,11 +178,16 @@ export function WithdrawPage() {
       }
 
       if (method === 'upi') {
-        if (!upiId.trim() || upiId.trim().length < 5 || !upiId.includes('@')) {
-          setError('Please enter a valid UPI ID (e.g. name@upi).');
+        const trimmed = upiId.trim();
+        if (!trimmed) {
+          setError('UPI ID is required.');
           return { valid: false, amt: 0, details: '' };
         }
-        details = `UPI ID: ${upiId.trim()}`;
+        if (!UPI_REGEX.test(trimmed)) {
+          setError('Enter a valid UPI ID, e.g. name@upi');
+          return { valid: false, amt: 0, details: '' };
+        }
+        details = `UPI ID: ${trimmed}`;
       } else if (method === 'bank_transfer') {
         if (!accountHolder.trim()) {
           setError('Account holder name is required.');
@@ -227,9 +240,9 @@ export function WithdrawPage() {
         ? `${methodLabel(method)} request for ${formatMoney(amt)} submitted! We will send the gift card to your email.`
         : `Withdrawal request for ${formatMoney(amt)} submitted! Our team will review it shortly.`,
     );
-    // Reset form
     setAmount('');
     setUpiId('');
+    setUpiError('');
     setAccountHolder('');
     setAccountNumber('');
     setIfscCode('');
@@ -239,7 +252,8 @@ export function WithdrawPage() {
     await loadData();
   };
 
-  const canSubmit = !hasPending && !isSuspended && (isGiftCard ? !!selectedDenominationId : !!amount);
+  const upiValid = method === 'upi' ? UPI_REGEX.test(upiId.trim()) : true;
+  const canSubmit = !hasPending && !isSuspended && upiValid && (isGiftCard ? !!selectedDenominationId : !!amount);
 
   if (loading) return <Spinner size="lg" className="py-20" />;
 
@@ -281,53 +295,55 @@ export function WithdrawPage() {
               <label className="label">Select Payment Method</label>
               <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {PAYMENT_METHODS.map((opt) => {
-              const Icon = opt.icon;
-              const selected = method === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => handleMethodChange(opt.value)}
-                  disabled={hasPending}
-                  className={`group relative flex flex-col items-start gap-2 rounded-xl border p-4 text-left transition-all ${
-                    selected
-                      ? 'border-brand-500 bg-brand-600/10 ring-1 ring-brand-500/30'
-                      : 'border-ink-200 bg-ink-800/30 hover:border-ink-300 hover:bg-ink-800/60'
-                  } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                >
-                  {selected && (
-                    <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
-                      <Check className="h-3 w-3" />
-                    </span>
-                  )}
-                  <div className={`grid h-10 w-10 place-items-center rounded-lg ${
-                    selected ? 'bg-brand-600/20 text-brand-400' : 'bg-ink-800 text-ink-400 group-hover:text-ink-200'
-                  }`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
-                    <p className="text-xs text-ink-400">{opt.description}</p>
-                  </div>
-                </button>
-              );
-            })}
+                  const selected = method === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleMethodChange(opt.value)}
+                      disabled={hasPending}
+                      className={`group relative flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-all ${
+                        selected
+                          ? 'border-brand-500 bg-brand-600/10 ring-1 ring-brand-500/30'
+                          : 'border-ink-200 bg-ink-800/30 hover:border-ink-300 hover:bg-ink-800/60'
+                      } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                    >
+                      {selected && (
+                        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
+                          <Check className="h-3 w-3" />
+                        </span>
+                      )}
+                      <PaymentIcon type={opt.iconType} className="h-11 w-11 rounded-lg" />
+                      <div>
+                        <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
+                        <p className="text-xs text-ink-400">{opt.description}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-4">
               {/* UPI Fields */}
               {method === 'upi' && (
-                <Input
-                  label="UPI ID"
-                  type="text"
-                  name="upi_id"
-                  placeholder="name@upi"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  disabled={hasPending}
-                  hint="Enter your UPI ID (e.g. yourname@paytm)"
-                />
+                <div>
+                  <Input
+                    label="UPI ID"
+                    type="text"
+                    name="upi_id"
+                    placeholder="name@upi"
+                    value={upiId}
+                    onChange={(e) => handleUpiChange(e.target.value)}
+                    disabled={hasPending}
+                    error={upiError || undefined}
+                    hint={upiError ? undefined : 'Enter your UPI ID (e.g. yourname@oksbi)'}
+                  />
+                  <div className="mt-2 flex items-center gap-2 rounded-lg bg-ink-800/40 px-3 py-2">
+                    <PaymentIcon type="upi" className="h-6 w-6 rounded" />
+                    <p className="text-xs text-ink-400">Accepted: any valid UPI ID (e.g. name@upi, 9876543210@ybl)</p>
+                  </div>
+                </div>
               )}
 
               {/* Bank Transfer Fields */}
@@ -455,9 +471,12 @@ export function WithdrawPage() {
                     <span className="text-ink-400">Available Balance</span>
                     <span className="font-medium text-white">{formatMoney(balance)}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex items-center justify-between">
                     <span className="text-ink-400">Payment Method</span>
-                    <span className="font-medium text-white">{methodLabel(method)}</span>
+                    <span className="flex items-center gap-2 font-medium text-white">
+                      <PaymentIcon type={methodIconType(method)} className="h-5 w-5 rounded" />
+                      {methodLabel(method)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ink-400">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
@@ -501,26 +520,21 @@ export function WithdrawPage() {
               <EmptyState icon={<Wallet className="h-10 w-10" />} title="No withdrawals yet" description="Your withdrawal requests will appear here." />
             ) : (
               <div className="mt-4 space-y-2">
-                {withdrawals.map((wd) => {
-              const Icon = isGiftCardMethod(wd.method) ? Gift : wd.method === 'upi' ? Smartphone : Building2;
-              return (
-                <div key={wd.id} className="flex items-center justify-between rounded-xl border border-ink-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-ink-800">
-                      <Icon className="h-5 w-5 text-ink-400" />
+                {withdrawals.map((wd) => (
+                  <div key={wd.id} className="flex items-center justify-between rounded-xl border border-ink-200 p-4">
+                    <div className="flex items-center gap-3">
+                      <PaymentIcon type={methodIconType(wd.method)} className="h-10 w-10 rounded-xl" />
+                      <div>
+                        <p className="text-sm font-bold text-white">{formatMoney(wd.amount)}</p>
+                        <p className="text-xs text-ink-400">
+                          {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
+                        </p>
+                        {wd.rejection_reason && <p className="mt-0.5 text-xs text-danger-400">Rejected: {wd.rejection_reason}</p>}
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">{formatMoney(wd.amount)}</p>
-                      <p className="text-xs capitalize text-ink-400">
-                        {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
-                      </p>
-                      {wd.rejection_reason && <p className="mt-0.5 text-xs text-danger-400">Rejected: {wd.rejection_reason}</p>}
-                    </div>
+                    <StatusBadge status={wd.status} />
                   </div>
-                  <StatusBadge status={wd.status} />
-                </div>
-              );
-            })}
+                ))}
               </div>
             )}
           </Card>
