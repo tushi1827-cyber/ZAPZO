@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowDownToLine, CheckCircle2, XCircle, Clock, Banknote, Eye,
+  ArrowDownToLine, XCircle, Clock, Banknote, Eye,
+  Smartphone, Building2, Gift, Mail,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -10,13 +11,41 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
-import { Withdrawal } from '@/types';
+import { Withdrawal, WithdrawalMethod } from '@/types';
 
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 interface WdWithUser extends Withdrawal {
   user?: { name: string; referral_code: string };
+}
+
+const GIFT_CARD_METHODS: WithdrawalMethod[] = ['amazon_gift_card', 'flipkart_gift_card', 'google_play_gift_card'];
+
+function isGiftCardMethod(m: WithdrawalMethod): boolean {
+  return GIFT_CARD_METHODS.includes(m);
+}
+
+function methodLabel(m: WithdrawalMethod): string {
+  const labels: Record<WithdrawalMethod, string> = {
+    upi: 'UPI',
+    bank_transfer: 'Bank Transfer',
+    amazon_gift_card: 'Amazon Gift Card',
+    flipkart_gift_card: 'Flipkart Gift Card',
+    google_play_gift_card: 'Google Play Gift Card',
+  };
+  return labels[m] || m.replace('_', ' ');
+}
+
+function MethodIcon({ method, className }: { method: WithdrawalMethod; className?: string }) {
+  if (isGiftCardMethod(method)) return <Gift className={className} />;
+  if (method === 'upi') return <Smartphone className={className} />;
+  return <Building2 className={className} />;
+}
+
+function parsePayoutEmail(details: string): string | null {
+  const match = details.match(/Email:\s*(.+)/i);
+  return match ? match[1].trim() : null;
 }
 
 export function AdminWithdrawalsPage() {
@@ -139,7 +168,12 @@ export function AdminWithdrawalsPage() {
                       <p className="text-xs font-mono text-ink-400">{w.user?.referral_code}</p>
                     </td>
                     <td className="px-4 py-3 font-bold text-white">{formatMoney(w.amount)}</td>
-                    <td className="px-4 py-3 hidden sm:table-cell capitalize text-ink-400">{w.method.replace('_', ' ')}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <div className="flex items-center gap-2">
+                        <MethodIcon method={w.method} className="h-4 w-4 text-ink-400" />
+                        <span className="text-ink-400">{methodLabel(w.method)}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3"><StatusBadge status={w.status} /></td>
                     <td className="px-4 py-3 hidden md:table-cell text-ink-400">{new Date(w.created_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
@@ -166,12 +200,15 @@ export function AdminWithdrawalsPage() {
                 <p className="text-xs font-mono text-ink-400">{selected.user?.referral_code}</p>
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
-                <p className="text-xs text-ink-400">Amount</p>
+                <p className="text-xs text-ink-400">{isGiftCardMethod(selected.method) ? 'Gift Card Value' : 'Amount'}</p>
                 <p className="text-2xl font-bold text-brand-400">{formatMoney(selected.amount)}</p>
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
-                <p className="text-xs text-ink-400">Method</p>
-                <p className="font-semibold capitalize text-white">{selected.method.replace('_', ' ')}</p>
+                <p className="text-xs text-ink-400">Payment Method</p>
+                <div className="flex items-center gap-2">
+                  <MethodIcon method={selected.method} className="h-4 w-4 text-ink-400" />
+                  <p className="font-semibold text-white">{methodLabel(selected.method)}</p>
+                </div>
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
                 <p className="text-xs text-ink-400">Status</p>
@@ -179,10 +216,33 @@ export function AdminWithdrawalsPage() {
               </div>
             </div>
 
+            {/* Gift card fulfillment banner */}
+            {isGiftCardMethod(selected.method) && (
+              <div className="rounded-xl border border-brand-500/30 bg-brand-600/10 p-4">
+                <div className="flex items-center gap-2">
+                  <Gift className="h-5 w-5 text-brand-400" />
+                  <p className="font-semibold text-brand-400">
+                    {methodLabel(selected.method)} — {formatMoney(selected.amount)}
+                  </p>
+                </div>
+                <p className="mt-1 text-xs text-ink-400">
+                  This withdrawal requires purchasing and sending a {methodLabel(selected.method)} worth {formatMoney(selected.amount)} to the user's email.
+                </p>
+                {(() => {
+                  const email = parsePayoutEmail(selected.payout_details);
+                  return email ? (
+                    <p className="mt-2 flex items-center gap-1.5 text-sm text-white">
+                      <Mail className="h-4 w-4 text-ink-400" /> {email}
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+            )}
+
             <div>
               <p className="mb-1 text-sm font-semibold text-ink-50">Payout Details</p>
               <div className="rounded-xl bg-ink-800/50 p-3">
-                <p className="text-sm text-ink-50 break-all">{selected.payout_details}</p>
+                <p className="whitespace-pre-wrap text-sm text-ink-50 break-all">{selected.payout_details}</p>
               </div>
             </div>
 
@@ -194,7 +254,11 @@ export function AdminWithdrawalsPage() {
 
             {selected.status === 'paid' && (
               <div className="rounded-xl bg-accent-400/10 p-3">
-                <p className="text-sm text-accent-400">This withdrawal has been paid.</p>
+                <p className="text-sm text-accent-400">
+                  {isGiftCardMethod(selected.method)
+                    ? 'This gift card has been fulfilled and sent to the user.'
+                    : 'This withdrawal has been paid.'}
+                </p>
               </div>
             )}
 
@@ -219,11 +283,11 @@ export function AdminWithdrawalsPage() {
                     {actionLoading ? <Spinner size="sm" /> : <><XCircle className="h-4 w-4" /> Reject</>}
                   </Button>
                   <Button size="sm" onClick={() => handleReview('paid')} disabled={actionLoading}>
-                    {actionLoading ? <Spinner size="sm" /> : <><Banknote className="h-4 w-4" /> Mark Paid</>}
+                    {actionLoading ? <Spinner size="sm" /> : <><Banknote className="h-4 w-4" /> {isGiftCardMethod(selected.method) ? 'Mark Fulfilled' : 'Mark Paid'}</>}
                   </Button>
                 </div>
                 <p className="text-xs text-ink-400">
-                  Rejecting releases reserved funds back to the user's wallet. Marking paid finalizes the withdrawal.
+                  Rejecting releases reserved funds back to the user's wallet. {isGiftCardMethod(selected.method) ? 'Marking fulfilled confirms the gift card has been sent.' : 'Marking paid finalizes the withdrawal.'}
                 </p>
               </>
             )}

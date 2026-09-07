@@ -23,7 +23,23 @@ export type WalletTxType =
   | 'withdrawal'
   | 'withdrawal_reversal';
 export type WalletTxStatus = 'pending' | 'completed' | 'reversed';
-export type WithdrawalMethod = 'upi' | 'bank_transfer';
+export type WithdrawalMethod =
+  | 'upi'
+  | 'bank_transfer'
+  | 'amazon_gift_card'
+  | 'flipkart_gift_card'
+  | 'google_play_gift_card';
+
+export type GiftCardProvider = 'amazon_gift_card' | 'flipkart_gift_card' | 'google_play_gift_card';
+
+export interface GiftCardDenomination {
+  id: string;
+  provider: GiftCardProvider;
+  value: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 export type WithdrawalStatus = 'pending' | 'processing' | 'approved' | 'rejected' | 'paid';
 
 export interface Profile {
