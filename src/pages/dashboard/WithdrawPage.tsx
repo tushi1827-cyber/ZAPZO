@@ -17,7 +17,34 @@ import { PaymentIcon, PaymentIconType } from '@/components/PaymentMethodIcons';
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const UPI_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
+const UPI_BASIC_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
+
+const EMAIL_DOMAINS = new Set([
+  'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.in', 'yahoo.in',
+  'outlook.com', 'outlook.in', 'hotmail.com', 'hotmail.co.in', 'live.com',
+  'icloud.com', 'me.com', 'mac.com', 'aol.com', 'protonmail.com', 'proton.me',
+  'zoho.com', 'mail.com', 'gmx.com', 'yandex.com', 'rediffmail.com',
+  'sify.com', 'inbox.com', 'msn.com', 'comcast.net', 'verizon.net',
+  'facebook.com', 'apple.com',
+]);
+
+function isValidUpiId(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (trimmed.includes(' ')) return false;
+  const parts = trimmed.split('@');
+  if (parts.length !== 2) return false;
+  const [before, after] = parts;
+  if (!before || before.length < 2) return false;
+  if (!/^[a-zA-Z0-9.\-_]+$/.test(before)) return false;
+  if (!after || after.length < 2) return false;
+  if (!/^[a-zA-Z]/.test(after)) return false;
+  if (!/^[a-zA-Z0-9.\-_]+$/.test(after)) return false;
+  if (/^\d+$/.test(after)) return false;
+  if (EMAIL_DOMAINS.has(after.toLowerCase())) return false;
+  if (after.includes('.') && EMAIL_DOMAINS.has(after.toLowerCase())) return false;
+  return true;
+}
 
 interface PaymentMethodOption {
   value: WithdrawalMethod;
@@ -120,7 +147,7 @@ export function WithdrawPage() {
   const handleUpiChange = (value: string) => {
     const trimmed = value.trim();
     setUpiId(trimmed);
-    if (trimmed && !UPI_REGEX.test(trimmed)) {
+    if (trimmed && !isValidUpiId(trimmed)) {
       setUpiError('Enter a valid UPI ID, e.g. name@upi');
     } else {
       setUpiError('');
@@ -183,7 +210,7 @@ export function WithdrawPage() {
           setError('UPI ID is required.');
           return { valid: false, amt: 0, details: '' };
         }
-        if (!UPI_REGEX.test(trimmed)) {
+        if (!isValidUpiId(trimmed)) {
           setError('Enter a valid UPI ID, e.g. name@upi');
           return { valid: false, amt: 0, details: '' };
         }
@@ -252,7 +279,7 @@ export function WithdrawPage() {
     await loadData();
   };
 
-  const upiValid = method === 'upi' ? UPI_REGEX.test(upiId.trim()) : true;
+  const upiValid = method === 'upi' ? isValidUpiId(upiId) : true;
   const canSubmit = !hasPending && !isSuspended && upiValid && (isGiftCard ? !!selectedDenominationId : !!amount);
 
   if (loading) return <Spinner size="lg" className="py-20" />;
