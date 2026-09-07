@@ -150,6 +150,23 @@ export interface AuditLog {
   created_at: string;
 }
 
+export type NotificationType =
+  | 'task_submitted'
+  | 'task_approved'
+  | 'task_rejected'
+  | 'reward_received'
+  | 'withdrawal_requested'
+  | 'withdrawal_processing'
+  | 'withdrawal_paid'
+  | 'withdrawal_rejected'
+  | 'gift_card_fulfilled'
+  | 'referral_reward'
+  | 'wallet_adjustment'
+  | 'submission_approved'
+  | 'submission_rejected'
+  | 'success'
+  | 'danger';
+
 export interface Notification {
   id: string;
   user_id: string;
@@ -157,6 +174,7 @@ export interface Notification {
   title: string;
   body: string | null;
   link: string | null;
+  related_id: string | null;
   is_read: boolean;
   created_at: string;
 }

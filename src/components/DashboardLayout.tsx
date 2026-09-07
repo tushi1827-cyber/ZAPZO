@@ -1,12 +1,15 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardList, Wallet, Users, ArrowDownToLine,
   Menu, X, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
+  CheckCircle2, XCircle, Banknote, Clock, Gift, Send, Sparkles,
+  CheckCheck, ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
 import { supabase } from '@/lib/supabase';
+import { Notification } from '@/types';
 
 const navItems = [
   { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -19,32 +22,249 @@ const navItems = [
   { to: '/dashboard/notifications', label: 'Notifications', icon: Bell },
 ];
 
+const typeIcon: Record<string, typeof Bell> = {
+  task_submitted: Send,
+  task_approved: CheckCircle2,
+  task_rejected: XCircle,
+  submission_approved: CheckCircle2,
+  submission_rejected: XCircle,
+  reward_received: Sparkles,
+  withdrawal_requested: ArrowDownToLine,
+  withdrawal_processing: Clock,
+  withdrawal_paid: Banknote,
+  withdrawal_rejected: XCircle,
+  gift_card_fulfilled: Gift,
+  referral_reward: Users,
+  referral_qualified: Users,
+  wallet_adjustment: Wallet,
+  success: CheckCircle2,
+  danger: XCircle,
+};
+
+const toneBg: Record<string, string> = {
+  success: 'bg-accent-400/10 text-accent-400',
+  danger: 'bg-danger-500/10 text-danger-400',
+  warning: 'bg-warning-500/15 text-warning-400',
+  brand: 'bg-brand-600/15 text-brand-400',
+  info: 'bg-brand-600/10 text-brand-400',
+};
+
+const typeTone: Record<string, string> = {
+  task_submitted: 'info',
+  task_approved: 'success',
+  task_rejected: 'danger',
+  submission_approved: 'success',
+  submission_rejected: 'danger',
+  reward_received: 'success',
+  withdrawal_requested: 'info',
+  withdrawal_processing: 'warning',
+  withdrawal_paid: 'success',
+  withdrawal_rejected: 'danger',
+  gift_card_fulfilled: 'brand',
+  referral_reward: 'brand',
+  referral_qualified: 'brand',
+  wallet_adjustment: 'info',
+  success: 'success',
+  danger: 'danger',
+};
+
+function timeAgo(date: string): string {
+  const diff = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(date).toLocaleDateString('en-IN', { dateStyle: 'medium' });
+}
+
+function NotificationBell({ profileId }: { profileId: string }) {
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [markingAll, setMarkingAll] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const fetchUnread = useCallback(async () => {
+    const { count } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', profileId)
+      .eq('is_read', false);
+    setUnreadCount(count || 0);
+  }, [profileId]);
+
+  const fetchRecent = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', profileId)
+      .order('created_at', { ascending: false })
+      .limit(8);
+    setNotifications((data as Notification[]) || []);
+    setLoading(false);
+  }, [profileId]);
+
+  useEffect(() => {
+    fetchUnread();
+    const channel = supabase
+      .channel('notifications-unread')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${profileId}` }, () => {
+        fetchUnread();
+        if (open) fetchRecent();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [profileId, fetchUnread, fetchRecent, open]);
+
+  useEffect(() => {
+    if (open) fetchRecent();
+  }, [open, fetchRecent]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  const markAllRead = async () => {
+    const unread = notifications.filter((n) => !n.is_read);
+    if (unread.length === 0) return;
+    setMarkingAll(true);
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .in('id', unread.map((n) => n.id));
+    setMarkingAll(false);
+    await fetchRecent();
+    await fetchUnread();
+  };
+
+  const markRead = async (id: string) => {
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    await fetchRecent();
+    await fetchUnread();
+  };
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative rounded-lg p-2 text-ink-400 transition hover:bg-ink-800 hover:text-white"
+        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+      >
+        <Bell className="h-5 w-5" />
+        {unreadCount > 0 && (
+          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-ink-200 bg-ink-900 shadow-2xl z-50 animate-slide-up">
+          <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
+            <p className="font-semibold text-white">Notifications</p>
+            {unreadCount > 0 && (
+              <button
+                onClick={markAllRead}
+                disabled={markingAll}
+                className="flex items-center gap-1 text-xs font-medium text-brand-400 transition hover:text-brand-300 disabled:opacity-40"
+              >
+                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+              </button>
+            )}
+          </div>
+
+          <div className="max-h-96 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="px-4 py-8 text-center">
+                <Bell className="mx-auto mb-2 h-8 w-8 text-ink-400" />
+                <p className="text-sm text-ink-400">No notifications yet</p>
+              </div>
+            ) : (
+              <div className="py-1">
+                {notifications.map((n) => {
+                  const Icon = typeIcon[n.type] || Bell;
+                  const tone = typeTone[n.type] || 'info';
+                  return (
+                    <div
+                      key={n.id}
+                      className={`flex items-start gap-3 px-3 py-2.5 transition hover:bg-ink-800/50 ${!n.is_read ? 'bg-brand-600/5' : ''}`}
+                    >
+                      <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${toneBg[tone] || 'bg-ink-800 text-ink-400'}`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="truncate text-sm font-medium text-white">{n.title}</p>
+                          {!n.is_read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />}
+                        </div>
+                        {n.body && <p className="mt-0.5 line-clamp-2 text-xs text-ink-400">{n.body}</p>}
+                        <p className="mt-0.5 text-[11px] text-ink-400">{timeAgo(n.created_at)}</p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-0.5">
+                        {n.link && (
+                          <Link
+                            to={n.link}
+                            onClick={() => { if (!n.is_read) markRead(n.id); setOpen(false); }}
+                            className="rounded-md p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white"
+                            title="Open"
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </Link>
+                        )}
+                        {!n.is_read && (
+                          <button
+                            onClick={() => markRead(n.id)}
+                            className="rounded-md p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white"
+                            title="Mark read"
+                          >
+                            <CheckCheck className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-ink-200 px-4 py-2.5">
+            <Link
+              to="/dashboard/notifications"
+              onClick={() => setOpen(false)}
+              className="block text-center text-sm font-medium text-brand-400 transition hover:text-brand-300"
+            >
+              View all notifications
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function DashboardLayout() {
   const { profile, isAdmin, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const isSuspended = profile?.is_suspended;
-
-  useEffect(() => {
-    if (!profile) return;
-    const fetchUnread = async () => {
-      const { count } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', profile.id)
-        .eq('is_read', false);
-      setUnreadCount(count || 0);
-    };
-    fetchUnread();
-    const channel = supabase
-      .channel('notifications-unread')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${profile.id}` }, fetchUnread)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profile]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -131,26 +351,12 @@ export function DashboardLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <Logo size="sm" />
-          <Link to="/dashboard/notifications" className="relative rounded-lg p-2 text-ink-400 hover:bg-ink-800 hover:text-white" aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}>
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Link>
+          {profile && <NotificationBell profileId={profile.id} />}
         </div>
 
         {/* Desktop top bar */}
         <div className="sticky top-0 z-20 hidden items-center justify-end border-b border-ink-200 bg-ink-950/80 px-6 py-3 backdrop-blur-lg lg:flex">
-          <Link to="/dashboard/notifications" className="relative rounded-lg p-2 text-ink-400 transition hover:bg-ink-800 hover:text-white" aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}>
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Link>
+          {profile && <NotificationBell profileId={profile.id} />}
         </div>
 
         {isSuspended && (

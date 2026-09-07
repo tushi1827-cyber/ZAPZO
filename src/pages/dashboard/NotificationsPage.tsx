@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Bell, CheckCircle2, XCircle, Banknote, Clock, Gift, Wallet,
-  CheckCheck, Trash2, ExternalLink,
+  CheckCheck, Trash2, ExternalLink, Send, ArrowDownToLine, Users, Sparkles,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -12,23 +12,49 @@ import { supabase } from '@/lib/supabase';
 import { Notification } from '@/types';
 
 const typeIcon: Record<string, typeof Bell> = {
+  task_submitted: Send,
+  task_approved: CheckCircle2,
+  task_rejected: XCircle,
   submission_approved: CheckCircle2,
   submission_rejected: XCircle,
+  reward_received: Sparkles,
+  withdrawal_requested: ArrowDownToLine,
+  withdrawal_processing: Clock,
   withdrawal_paid: Banknote,
   withdrawal_rejected: XCircle,
-  withdrawal_processing: Clock,
-  referral_qualified: Gift,
+  gift_card_fulfilled: Gift,
+  referral_reward: Users,
+  referral_qualified: Users,
   wallet_adjustment: Wallet,
+  success: CheckCircle2,
+  danger: XCircle,
 };
 
 const typeTone: Record<string, 'success' | 'danger' | 'warning' | 'brand' | 'info'> = {
+  task_submitted: 'info',
+  task_approved: 'success',
+  task_rejected: 'danger',
   submission_approved: 'success',
   submission_rejected: 'danger',
+  reward_received: 'success',
+  withdrawal_requested: 'info',
+  withdrawal_processing: 'warning',
   withdrawal_paid: 'success',
   withdrawal_rejected: 'danger',
-  withdrawal_processing: 'warning',
+  gift_card_fulfilled: 'brand',
+  referral_reward: 'brand',
   referral_qualified: 'brand',
   wallet_adjustment: 'info',
+  success: 'success',
+  danger: 'danger',
+};
+
+const toneBg: Record<string, string> = {
+  success: 'bg-accent-400/10 text-accent-400',
+  danger: 'bg-danger-500/10 text-danger-400',
+  warning: 'bg-warning-500/15 text-warning-400',
+  brand: 'bg-brand-600/15 text-brand-400',
+  info: 'bg-brand-600/10 text-brand-400',
 };
 
 function timeAgo(date: string): string {
@@ -152,14 +178,7 @@ export function NotificationsPage() {
           <div className="space-y-1">
             {filtered.map((n) => {
               const Icon = typeIcon[n.type] || Bell;
-              const tone = typeTone[n.type] || 'neutral';
-              const toneBg: Record<string, string> = {
-                success: 'bg-accent-400/10 text-accent-400',
-                danger: 'bg-danger-500/10 text-danger-400',
-                warning: 'bg-warning-500/15 text-warning-400',
-                brand: 'bg-brand-600/15 text-brand-400',
-                info: 'bg-brand-600/10 text-brand-400',
-              };
+              const tone = typeTone[n.type] || 'info';
               return (
                 <div
                   key={n.id}
