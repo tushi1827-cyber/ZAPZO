@@ -55,9 +55,8 @@ export function AdminSupportPage() {
     if (statusFilter !== 'all') query = query.eq('status', statusFilter);
     if (categoryFilter !== 'all') query = query.eq('category', categoryFilter);
     if (priorityFilter !== 'all') query = query.eq('priority', priorityFilter);
-    if (search.trim()) {
-      query = query.or(`ticket_number.ilike.%${search.trim()}%,subject.ilike.%${search.trim()}%`);
-    }
+    // Note: search filtering is done client-side after profile lookup
+    // so that searching by user name works correctly
 
     const { data, error } = await query;
     if (error) { setError('Failed to load tickets.'); setLoading(false); return; }

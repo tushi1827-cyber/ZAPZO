@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Send, Paperclip, X, Download, Headset, Lock,
-  StickyNote, Clock, User as UserIcon, Activity,
+  StickyNote, Activity,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -131,6 +131,7 @@ export function AdminTicketDetailPage() {
       .channel(`admin-ticket-${id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${id}` }, () => {
         loadMessages();
+        loadActivity();
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'support_tickets', filter: `id=eq.${id}` }, () => {
         loadTicket();
@@ -165,8 +166,11 @@ export function AdminTicketDetailPage() {
     const ext = file.name.split('.').pop() || 'bin';
     const userId = ticket?.user_id || '';
     const filePath = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('support-attachments').upload(filePath, file);
-    if (upErr) { setError('Failed to upload attachment.'); return null; }
+    const { error: upErr } = await supabase.storage.from('support-attachments').upload(filePath, file, {
+      contentType: file.type || 'application/octet-stream',
+      cacheControl: '3600',
+    });
+    if (upErr) { setError('Failed to upload attachment. Please try again.'); return null; }
     return filePath;
   };
 

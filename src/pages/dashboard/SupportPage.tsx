@@ -102,9 +102,12 @@ export function SupportPage() {
     const filePath = `${profile.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from('support-attachments')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type || 'application/octet-stream',
+        cacheControl: '3600',
+      });
     if (upErr) {
-      setCreateError('Failed to upload attachment.');
+      setCreateError('Failed to upload attachment. Please try again.');
       return null;
     }
     return filePath;
@@ -272,7 +275,8 @@ export function SupportPage() {
           />
 
           <div>
-            <label className="label">Attachment (optional)</label>
+            <label className="label">Attachment (Optional)</label>
+            <p className="mb-1.5 text-xs text-ink-400">You can attach a screenshot if it helps explain the issue.</p>
             {attachmentName ? (
               <div className="flex items-center gap-2 rounded-xl bg-ink-800/50 p-3">
                 <Paperclip className="h-4 w-4 text-brand-400" />

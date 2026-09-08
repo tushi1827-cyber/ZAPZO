@@ -123,8 +123,11 @@ export function TicketDetailPage() {
     if (!profile) return null;
     const ext = file.name.split('.').pop() || 'bin';
     const filePath = `${profile.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
-    const { error: upErr } = await supabase.storage.from('support-attachments').upload(filePath, file);
-    if (upErr) { setError('Failed to upload attachment.'); return null; }
+    const { error: upErr } = await supabase.storage.from('support-attachments').upload(filePath, file, {
+      contentType: file.type || 'application/octet-stream',
+      cacheControl: '3600',
+    });
+    if (upErr) { setError('Failed to upload attachment. Please try again.'); return null; }
     return filePath;
   };
 
