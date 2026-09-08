@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LifeBuoy, Plus, Search, MessageCircle, Paperclip, X } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +35,7 @@ function timeAgo(date: string): string {
 
 export function SupportPage() {
   const { profile } = useAuth();
+  const navigate = useNavigate();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,8 +64,9 @@ export function SupportPage() {
     if (statusFilter !== 'all') {
       query = query.eq('status', statusFilter);
     }
-    if (search.trim()) {
-      query = query.or(`ticket_number.ilike.%${search.trim()}%,subject.ilike.%${search.trim()}%`);
+    const sanitized = search.trim().replace(/[,.()]/g, ' ').trim();
+    if (sanitized) {
+      query = query.or(`ticket_number.ilike.%${sanitized}%,subject.ilike.%${sanitized}%`);
     }
 
     const { data, error } = await query;
@@ -150,7 +152,7 @@ export function SupportPage() {
     await load();
 
     if (data) {
-      window.location.href = `/dashboard/support/${data}`;
+      navigate(`/dashboard/support/${data}`);
     }
   };
 
