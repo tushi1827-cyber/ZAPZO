@@ -21,12 +21,7 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const anonKey = req.headers.get("apikey") || "";
-
-    // Create a service-role client to bypass PostgREST schema cache issues
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { persistSession: false },
-    });
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || req.headers.get("apikey") || "";
 
     // Extract the user's JWT from the Authorization header
     const authHeader = req.headers.get("Authorization") || "";
@@ -39,8 +34,16 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Service-role client: used ONLY to verify the JWT and extract the user ID.
+    // Never used for table queries — the service role bypasses RLS and leaves
+    // auth.uid() NULL inside triggers, which would cause guard_submission_insert
+    // to raise "Authentication required".
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false },
+    });
+
     // Verify the user's JWT and get their ID
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    const { data: userData, error: userError } = await adminClient.auth.getUser(token);
     if (userError || !userData.user) {
       return new Response(
         JSON.stringify({ error: "Invalid authentication" }),
@@ -68,10 +71,22 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Insert the submission using the service role client
-    // The BEFORE INSERT trigger (guard_submission_insert) handles all validation
-    // The AFTER INSERT trigger (process_submission_after_insert) handles auto-verification
-    const { data: insertData, error: insertError } = await supabase
+    // User-scoped client: uses the anon key + the caller's JWT as the access
+    // token. PostgREST sees the real JWT in the Authorization header, so
+    // auth.uid() inside the BEFORE/AFTER INSERT triggers resolves to the
+    // actual user. RLS policies (submissions_insert_own) apply normally.
+    const userClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+
+    // Insert the submission using the user-scoped client.
+    // The BEFORE INSERT trigger (guard_submission_insert) handles all validation:
+    //   auth check, suspension, proof validation, task validation, rate limits,
+    //   duplicate prevention, risk score, etc.
+    // The AFTER INSERT trigger (process_submission_after_insert) handles
+    //   automatic verification when task.verification_type = 'automatic'.
+    const { data: insertData, error: insertError } = await userClient
       .from("task_submissions")
       .insert({
         task_id,
@@ -106,6 +121,8 @@ Deno.serve(async (req: Request) => {
         friendlyMsg = "This task has expired and is no longer accepting submissions.";
       } else if (msg.includes("not started")) {
         friendlyMsg = "This task has not started yet.";
+      } else if (msg.includes("Authentication required")) {
+        friendlyMsg = "Authentication failed. Please sign in again.";
       }
 
       return new Response(
@@ -115,7 +132,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Fetch the full submission to return to the client
-    const { data: submission, error: fetchError } = await supabase
+    const { data: submission, error: fetchError } = await userClient
       .from("task_submissions")
       .select("*")
       .eq("id", insertData.id)
@@ -134,7 +151,7 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: err.message || "Internal server error" }),
+      JSON.stringify({ error: (err as Error).message || "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
