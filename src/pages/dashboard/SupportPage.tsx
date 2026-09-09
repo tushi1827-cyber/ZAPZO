@@ -70,26 +70,6 @@ export function SupportPage() {
     }
 
     const { data, error } = await query;
-
-    // === DIAGNOSTIC LOGGING (temporary) ===
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const { data: sessionData } = await supabase.auth.getSession();
-    console.group('%c[SupportPage] Ticket Load Diagnostic', 'color: #ff6b6b; font-weight: bold');
-    console.log('Supabase URL:', supabaseUrl);
-    console.log('Session exists:', !!sessionData.session);
-    console.log('User ID:', sessionData.session?.user?.id || 'NO SESSION');
-    console.log('Error object:', error);
-    if (error) {
-      console.log('  error.code:', error.code);
-      console.log('  error.message:', error.message);
-      console.log('  error.details:', error.details);
-      console.log('  error.hint:', error.hint);
-    }
-    console.log('Data returned:', data);
-    console.log('Data length:', data?.length ?? 0);
-    console.groupEnd();
-    // === END DIAGNOSTIC LOGGING ===
-
     if (error) setError('Failed to load tickets.');
     setTickets((data as SupportTicket[]) || []);
     setLoading(false);
