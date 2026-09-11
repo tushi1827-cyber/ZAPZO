@@ -37,7 +37,7 @@ Deno.serve(async (req: Request) => {
     // Service-role client: used ONLY to verify the JWT and extract the user ID.
     // Never used for table queries — the service role bypasses RLS and leaves
     // auth.uid() NULL inside triggers, which would cause guard_submission_insert
-    // to raise "Authentication required".
+    // to raise "Authentication Required".
     const adminClient = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false },
     });
