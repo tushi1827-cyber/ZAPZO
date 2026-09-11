@@ -9,6 +9,12 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
 import { supabase } from '@/lib/supabase';
+import {
+  fetchNotifications,
+  fetchUnreadCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+} from '@/lib/notificationsApi';
 import { Notification } from '@/types';
 
 const navItems = [
@@ -94,37 +100,33 @@ function NotificationBell({ profileId }: { profileId: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
   const fetchUnread = useCallback(async () => {
-    const { count } = await supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', profileId)
-      .eq('is_read', false);
-    setUnreadCount(count || 0);
-  }, [profileId]);
+    try {
+      const count = await fetchUnreadCount();
+      setUnreadCount(count);
+    } catch {
+      setUnreadCount(0);
+    }
+  }, []);
 
   const fetchRecent = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', profileId)
-      .order('created_at', { ascending: false })
-      .limit(8);
-    setNotifications((data as Notification[]) || []);
+    try {
+      const data = await fetchNotifications(8);
+      setNotifications(data);
+    } catch {
+      setNotifications([]);
+    }
     setLoading(false);
-  }, [profileId]);
+  }, []);
 
   useEffect(() => {
     fetchUnread();
-    const channel = supabase
-      .channel('notifications-unread')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${profileId}` }, () => {
-        fetchUnread();
-        if (open) fetchRecent();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [profileId, fetchUnread, fetchRecent, open]);
+    const interval = setInterval(() => {
+      fetchUnread();
+      if (open) fetchRecent();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnread, fetchRecent, open]);
 
   useEffect(() => {
     if (open) fetchRecent();
@@ -144,17 +146,23 @@ function NotificationBell({ profileId }: { profileId: string }) {
     const unread = notifications.filter((n) => !n.is_read);
     if (unread.length === 0) return;
     setMarkingAll(true);
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', unread.map((n) => n.id));
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      setMarkingAll(false);
+      return;
+    }
     setMarkingAll(false);
     await fetchRecent();
     await fetchUnread();
   };
 
   const markRead = async (id: string) => {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    try {
+      await markNotificationRead(id);
+    } catch {
+      return;
+    }
     await fetchRecent();
     await fetchUnread();
   };

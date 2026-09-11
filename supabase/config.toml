@@ -1,2 +1,8 @@
 [functions.submit-task]
 verify_jwt = false
+
+[functions.notifications]
+verify_jwt = false
+
+[functions.notifications-api]
+verify_jwt = false

@@ -9,7 +9,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner, EmptyState } from '@/components/ui/Feedback';
 import { Badge } from '@/components/ui/Badge';
-import { supabase } from '@/lib/supabase';
+import {
+  fetchNotifications,
+  fetchUnreadCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification as deleteNotificationApi,
+} from '@/lib/notificationsApi';
 import { Notification } from '@/types';
 
 const typeIcon: Record<string, typeof Bell> = {
@@ -87,13 +93,13 @@ export function NotificationsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-    if (error) setError('Failed to load notifications.');
-    setNotifications((data as Notification[]) || []);
+    try {
+      const data = await fetchNotifications(50);
+      setNotifications(data);
+    } catch {
+      setError('Failed to load notifications.');
+      setNotifications([]);
+    }
     setLoading(false);
   }, []);
 
@@ -106,30 +112,42 @@ export function NotificationsPage() {
     const unread = notifications.filter((n) => !n.is_read);
     if (unread.length === 0) return;
     setMarkingAll(true);
-    const { error } = await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', unread.map((n) => n.id));
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      setMarkingAll(false);
+      setError('Failed to mark notifications as read.');
+      return;
+    }
     setMarkingAll(false);
-    if (error) { setError('Failed to mark notifications as read.'); return; }
     await load();
   };
 
   const markRead = async (id: string) => {
     if (isBusy) return;
     setBusyId(id);
-    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    try {
+      await markNotificationRead(id);
+    } catch {
+      setBusyId(null);
+      setError('Failed to update notification.');
+      return;
+    }
     setBusyId(null);
-    if (error) { setError('Failed to update notification.'); return; }
     await load();
   };
 
   const deleteNotification = async (id: string) => {
     if (isBusy) return;
     setBusyId(id);
-    const { error } = await supabase.from('notifications').delete().eq('id', id);
+    try {
+      await deleteNotificationApi(id);
+    } catch {
+      setBusyId(null);
+      setError('Failed to delete notification.');
+      return;
+    }
     setBusyId(null);
-    if (error) { setError('Failed to delete notification.'); return; }
     await load();
   };
 
