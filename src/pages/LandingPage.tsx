@@ -104,7 +104,7 @@ export function LandingPage() {
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-ink-400 animate-slide-up">
-              Complete verified tasks, earn rewards, and grow through qualified referrals. A legitimate, transparent platform — no deposits, no promises, just real work for real rewards.
+              Complete verified tasks, earn rewards, and grow through qualified referrals. A legitimate, transparent platform no deposits, no promises, just real work for real rewards.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row animate-slide-up">
               <Button to="/register" size="lg">
