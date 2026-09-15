@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Zap, CheckCircle2, Users, ShieldCheck, Wallet, BadgeCheck, ClipboardList,
   ArrowRight, Gift, Search, FileCheck, Coins, Share2, TrendingUp,
@@ -6,24 +6,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { fetchHomepageContent, HomepageContent } from '@/lib/homepageContent';
+import { DEFAULT_HOMEPAGE_CONTENT } from '@/lib/homepageContent';
 
-const steps = [
-  { icon: Rocket, title: 'Create Account', desc: 'Sign up free and get your unique referral code instantly.' },
-  { icon: Search, title: 'Choose a Task', desc: 'Browse verified tasks across social, survey, app, and learning categories.' },
-  { icon: ClipboardList, title: 'Complete Task', desc: 'Follow the task instructions and complete the required actions.' },
-  { icon: FileCheck, title: 'Submit Proof', desc: 'Submit your proof of completion for verification.' },
-  { icon: BadgeCheck, title: 'Get Verified', desc: 'Our admin team reviews and verifies your submission.' },
-  { icon: Coins, title: 'Earn Reward', desc: 'Approved tasks credit rewards directly to your wallet.' },
-];
-
-const features = [
-  { icon: BadgeCheck, title: 'Verified Tasks', desc: 'Every task is reviewed by our team before rewards are credited. No fake completions.' },
-  { icon: Wallet, title: 'Transparent Wallet', desc: 'See every transaction in a clear ledger. Rewards, referrals, withdrawals — all visible.' },
-  { icon: Users, title: 'Qualified Referrals', desc: 'Refer friends and earn only when they complete a qualifying task. Fair and fraud-resistant.' },
-  { icon: ShieldCheck, title: 'Secure Account', desc: 'Bank-grade auth with Supabase. Your account and earnings are protected.' },
-  { icon: Eye, title: 'Admin Verification', desc: 'A dedicated review system ensures proof quality before any reward is paid out.' },
-  { icon: Lock, title: 'Fraud Protection', desc: 'Self-referral prevention, duplicate detection, and suspicious-activity flagging built in.' },
-];
+const iconMap: Record<string, React.ComponentType<{ className?: string; fill?: string }>> = {
+  Zap, CheckCircle2, Users, ShieldCheck, Wallet, BadgeCheck, ClipboardList,
+  ArrowRight, Gift, Search, FileCheck, Coins, Share2, TrendingUp,
+  AlertCircle, ChevronDown, Rocket, Eye, Fingerprint, Lock,
+};
 
 const trustPoints = [
   'Earnings are not guaranteed and depend on available tasks.',
@@ -31,41 +21,6 @@ const trustPoints = [
   'Rewards require admin verification before being credited.',
   'Fraudulent activity may result in reward reversal and account suspension.',
   'Users should never pay money to access ordinary earning tasks.',
-];
-
-const faqs = [
-  {
-    q: 'Is ZAPZO free to join?',
-    a: 'Yes. Creating an account is completely free. You should never pay anyone to access ordinary earning tasks on ZAPZO.',
-  },
-  {
-    q: 'How do I earn rewards?',
-    a: 'Complete verified tasks, submit proof, and once your submission is approved by our review team, the reward is credited to your wallet.',
-  },
-  {
-    q: 'Are earnings guaranteed?',
-    a: 'No. Earnings depend on the availability of tasks and successful verification of your submissions. We never promise guaranteed income.',
-  },
-  {
-    q: 'How do referrals work?',
-    a: 'Share your unique referral code. When a referred friend signs up AND completes a qualifying task that gets approved, your referral becomes qualified and you earn a referral reward. Signup alone does not generate a reward.',
-  },
-  {
-    q: 'Can I refer myself?',
-    a: 'No. Self-referrals are automatically prevented. Attempting to abuse the referral system may result in reward reversal and account suspension.',
-  },
-  {
-    q: 'How do withdrawals work?',
-    a: 'Request a withdrawal via UPI or bank transfer once you reach the minimum amount. Each request is manually reviewed by our admin team before being approved and paid.',
-  },
-  {
-    q: 'What happens if my submission is rejected?',
-    a: 'You will see the rejection reason on your submission. You can try another task — rejection does not affect your account standing unless fraudulent activity is detected.',
-  },
-  {
-    q: 'What is the wallet ledger?',
-    a: 'Every reward, referral bonus, adjustment, and withdrawal is recorded as a transaction in your wallet. You can review your full history at any time for complete transparency.',
-  },
 ];
 
 function FaqItem({ q, a }: { q: string; a: string }) {
@@ -82,6 +37,12 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export function LandingPage() {
+  const [content, setContent] = useState<HomepageContent>(DEFAULT_HOMEPAGE_CONTENT);
+
+  useEffect(() => {
+    fetchHomepageContent().then(setContent);
+  }, []);
+
   return (
     <div className="overflow-hidden">
       {/* Hero */}
@@ -94,27 +55,27 @@ export function LandingPage() {
           <div className="mx-auto max-w-3xl text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-600/30 bg-brand-600/10 px-4 py-1.5 text-sm font-medium text-brand-400 animate-fade-in">
               <Zap className="h-4 w-4" fill="currentColor" />
-              Do Tasks. Earn Rewards.
+              {content.heroBadge}
             </div>
             <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl animate-slide-up">
-              Do Tasks.
+              {content.heroHeadingLine1}
               <br />
               <span className="bg-gradient-to-r from-brand-400 via-brand-500 to-accent-400 bg-clip-text text-transparent">
-                Earn Rewards.
+                {content.heroHeadingLine2}
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-ink-400 animate-slide-up">
-              Complete verified tasks, earn rewards, and grow through qualified referrals. A legitimate, transparent platform. No deposits, no promises, just real work for real rewards.
+              {content.heroSubtitle}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row animate-slide-up">
-              <Button to="/register" size="lg">
-                Start Earning <ArrowRight className="h-5 w-5" />
+              <Button to={content.heroPrimaryButtonUrl} size="lg">
+                {content.heroPrimaryButtonText} <ArrowRight className="h-5 w-5" />
               </Button>
-              <Button to="/login" variant="secondary" size="lg">
-                Explore Tasks
+              <Button to={content.heroSecondaryButtonUrl} variant="secondary" size="lg">
+                {content.heroSecondaryButtonText}
               </Button>
             </div>
-            <p className="mt-4 text-xs text-ink-400">Free to join. No deposits required. Earnings not guaranteed.</p>
+            <p className="mt-4 text-xs text-ink-400">{content.heroDisclaimer}</p>
           </div>
 
           {/* Hero stats */}
@@ -140,22 +101,25 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wider text-brand-400">How It Works</p>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">Six simple steps to your first reward</h2>
-            <p className="mt-4 text-ink-400">From sign-up to payout — a clear, transparent process with no hidden steps.</p>
+            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">{content.howItWorksHeading}</h2>
+            <p className="mt-4 text-ink-400">{content.howItWorksDescription}</p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {steps.map((step, i) => (
-              <Card key={step.title} hover className="relative p-6">
-                <div className="absolute right-5 top-5 text-5xl font-black text-ink-200">{i + 1}</div>
-                <div className="relative">
-                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-600/15 text-brand-400">
-                    <step.icon className="h-6 w-6" />
+            {content.howItWorksSteps.map((step, i) => {
+              const Icon = iconMap[step.icon] || Zap;
+              return (
+                <Card key={i} hover className="relative p-6">
+                  <div className="absolute right-5 top-5 text-5xl font-black text-ink-200">{i + 1}</div>
+                  <div className="relative">
+                    <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-600/15 text-brand-400">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-bold text-white">{step.title}</h3>
+                    <p className="mt-1 text-sm text-ink-400">{step.desc}</p>
                   </div>
-                  <h3 className="mt-4 text-lg font-bold text-white">{step.title}</h3>
-                  <p className="mt-1 text-sm text-ink-400">{step.desc}</p>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -165,19 +129,22 @@ export function LandingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wider text-brand-400">Features</p>
-            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">Built for trust and transparency</h2>
-            <p className="mt-4 text-ink-400">Every feature is designed to keep earning fair, visible, and secure.</p>
+            <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">{content.featureHeading}</h2>
+            <p className="mt-4 text-ink-400">{content.featureDescription}</p>
           </div>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feat) => (
-              <Card key={feat.title} hover className="p-6">
-                <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-600/15 text-brand-400">
-                  <feat.icon className="h-6 w-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-bold text-white">{feat.title}</h3>
-                <p className="mt-1 text-sm text-ink-400">{feat.desc}</p>
-              </Card>
-            ))}
+            {content.features.map((feat, i) => {
+              const Icon = iconMap[feat.icon] || Zap;
+              return (
+                <Card key={i} hover className="p-6">
+                  <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand-600/15 text-brand-400">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-bold text-white">{feat.title}</h3>
+                  <p className="mt-1 text-sm text-ink-400">{feat.desc}</p>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -191,7 +158,7 @@ export function LandingPage() {
               <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">Diverse task categories</h2>
               <p className="mt-4 text-ink-400">Choose from a variety of verified tasks that match your skills and interests. Every task is clearly described with instructions and a stated reward.</p>
               <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {['Social', 'Survey', 'Website', 'App', 'Learning', 'Other'].map((cat) => (
+                {content.taskCategoryLabels.map((cat) => (
                   <div key={cat} className="flex items-center gap-2 rounded-xl border border-ink-200 bg-ink-900 px-3 py-2.5 text-sm font-medium text-ink-400">
                     <CheckCircle2 className="h-4 w-4 text-brand-400" />
                     {cat}
@@ -313,8 +280,8 @@ export function LandingPage() {
             <h2 className="mt-2 text-3xl font-bold text-white sm:text-4xl">Frequently asked questions</h2>
           </div>
           <div className="mt-10 space-y-3">
-            {faqs.map((faq) => (
-              <FaqItem key={faq.q} {...faq} />
+            {content.faqs.map((faq, i) => (
+              <FaqItem key={i} {...faq} />
             ))}
           </div>
         </div>
@@ -328,8 +295,8 @@ export function LandingPage() {
             <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/5" />
             <div className="relative">
               <TrendingUp className="mx-auto h-10 w-10 text-accent-400" />
-              <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">Ready to start earning?</h2>
-              <p className="mx-auto mt-4 max-w-xl text-white/70">Join ZAPZO today, complete verified tasks, and build your rewards through genuine effort.</p>
+              <h2 className="mt-4 text-3xl font-bold text-white sm:text-4xl">{content.finalCtaHeading}</h2>
+              <p className="mx-auto mt-4 max-w-xl text-white/70">{content.finalCtaDescription}</p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button to="/register" variant="secondary" size="lg" className="bg-white text-brand-700 hover:bg-white/90 border-0">
                   Get Started Free <ArrowRight className="h-5 w-5" />

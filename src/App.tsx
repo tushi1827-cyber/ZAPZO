@@ -40,6 +40,7 @@ const AdminAuditLogsPage = lazy(() => import('@/pages/admin/AdminAuditLogsPage')
 const AdminFraudPage = lazy(() => import('@/pages/admin/AdminFraudPage').then(m => ({ default: m.AdminFraudPage })));
 const AdminSupportPage = lazy(() => import('@/pages/admin/AdminSupportPage').then(m => ({ default: m.AdminSupportPage })));
 const AdminTicketDetailPage = lazy(() => import('@/pages/admin/AdminTicketDetailPage').then(m => ({ default: m.AdminTicketDetailPage })));
+const AdminHomepageEditorPage = lazy(() => import('@/pages/admin/AdminHomepageEditorPage').then(m => ({ default: m.AdminHomepageEditorPage })));
 
 const TermsPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.PrivacyPage })));
@@ -111,6 +112,7 @@ export default function App() {
                 <Route path="fraud" element={<AdminFraudPage />} />
                 <Route path="support" element={<AdminSupportPage />} />
                 <Route path="support/:id" element={<AdminTicketDetailPage />} />
+                <Route path="homepage" element={<AdminHomepageEditorPage />} />
               </Route>
 
               {/* Fallback */}
