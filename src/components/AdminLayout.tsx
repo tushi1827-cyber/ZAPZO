@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   Shield, Users, ClipboardList, FileCheck, ArrowDownToLine, Share2,
   Wallet, Settings as SettingsIcon, LayoutDashboard, Menu, X, LogOut, ScrollText,
-  ShieldAlert, Headset, LayoutTemplate,
+  ShieldAlert, Headset, LayoutTemplate, Mail,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -21,6 +21,7 @@ const navItems = [
   { to: '/admin/fraud', label: 'Fraud & Abuse', icon: ShieldAlert },
   { to: '/admin/support', label: 'Support Tickets', icon: Headset },
   { to: '/admin/homepage', label: 'Homepage Editor', icon: LayoutTemplate },
+  { to: '/admin/email-test', label: 'Email Test', icon: Mail },
 ];
 
 export function AdminLayout() {
