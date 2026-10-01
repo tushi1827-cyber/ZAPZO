@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Send } from 'lucide-react';
+import { Mail, Send, Play } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
@@ -27,6 +27,58 @@ export function AdminEmailTestPage() {
   const [payload, setPayload] = useState('{}');
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  const [processorRunning, setProcessorRunning] = useState(false);
+  const [processorStatus, setProcessorStatus] = useState<number | null>(null);
+  const [processorResponse, setProcessorResponse] = useState<unknown | null>(null);
+  const [processorUsed, setProcessorUsed] = useState(false);
+
+  const handleRunProcessor = async () => {
+    if (processorUsed) return;
+
+    const confirmed = window.confirm(
+      'Run the email queue processor once? This will attempt to send the pending test email.'
+    );
+    if (!confirmed) return;
+
+    setProcessorRunning(true);
+    setProcessorStatus(null);
+    setProcessorResponse(null);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        setProcessorStatus(0);
+        setProcessorResponse({ error: 'No active session — please log in again.' });
+        setProcessorRunning(false);
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-email-queue`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({}),
+        },
+      );
+
+      const data = await response.json();
+      setProcessorStatus(response.status);
+      setProcessorResponse(data);
+      setProcessorUsed(true);
+    } catch (err) {
+      setProcessorStatus(0);
+      setProcessorResponse({ error: 'Network error — could not reach the processor.' });
+    } finally {
+      setProcessorRunning(false);
+    }
+  };
 
   const handleSend = async () => {
     setResult(null);
@@ -148,6 +200,40 @@ export function AdminEmailTestPage() {
             </div>
           )}
         </div>
+      </Card>
+
+      <Card className="p-6 mt-6">
+        <div className="mb-4 flex items-center gap-2">
+          <Play className="h-5 w-5 text-brand-400" />
+          <h2 className="font-bold text-white">Queue Processor — One-Shot Test</h2>
+        </div>
+        <p className="text-sm text-neutral-400 mb-4">
+          Invokes <code className="text-neutral-300">process-email-queue</code> once using your current admin session.
+          Disabled after first use to prevent double-processing.
+        </p>
+
+        <Button
+          onClick={handleRunProcessor}
+          disabled={processorRunning || processorUsed}
+          variant="secondary"
+        >
+          {processorRunning
+            ? <><Spinner size="sm" /> Running processor…</>
+            : processorUsed
+              ? 'Processor already run'
+              : <><Play className="h-4 w-4" /> Run Queue Processor Once</>}
+        </Button>
+
+        {processorStatus !== null && (
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-neutral-400">
+              HTTP status: <span className={`font-mono font-semibold ${processorStatus === 200 ? 'text-accent-400' : 'text-danger-400'}`}>{processorStatus}</span>
+            </p>
+            <pre className="rounded-xl bg-neutral-900 p-4 text-xs text-neutral-300 overflow-x-auto whitespace-pre-wrap break-all">
+              {JSON.stringify(processorResponse, null, 2)}
+            </pre>
+          </div>
+        )}
       </Card>
     </AdminPageWrapper>
   );
