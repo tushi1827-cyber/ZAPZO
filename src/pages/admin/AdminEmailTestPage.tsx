@@ -68,13 +68,22 @@ export function AdminEmailTestPage() {
         },
       );
 
-      const data = await response.json();
       setProcessorStatus(response.status);
+
+      let data: unknown;
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        data = { error: `Non-JSON response (${response.status}): ${text.slice(0, 500) || '<empty body>'}` };
+      }
       setProcessorResponse(data);
       setProcessorUsed(true);
     } catch (err) {
       setProcessorStatus(0);
-      setProcessorResponse({ error: 'Network error — could not reach the processor.' });
+      const errMsg = err instanceof Error ? err.message : String(err);
+      setProcessorResponse({ error: `Request failed: ${errMsg}` });
     } finally {
       setProcessorRunning(false);
     }
