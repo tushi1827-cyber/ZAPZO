@@ -1,3 +1,4 @@
+// process-email-queue: processes pending email queue entries via Resend
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
