@@ -320,7 +320,7 @@ export function WithdrawPage() {
             {/* Payment Method Selection */}
             <div className="mt-5">
               <label className="label">Select Payment Method</label>
-              <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {PAYMENT_METHODS.map((opt) => {
                   const selected = method === opt.value;
                   return (
@@ -329,22 +329,29 @@ export function WithdrawPage() {
                       type="button"
                       onClick={() => handleMethodChange(opt.value)}
                       disabled={hasPending}
-                      className={`group relative flex flex-col items-start gap-3 rounded-xl border p-4 text-left transition-all ${
+                      className={`group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${
                         selected
-                          ? 'border-brand-500 bg-brand-600/10 ring-1 ring-brand-500/30'
-                          : 'border-ink-200 bg-ink-800/30 hover:border-ink-300 hover:bg-ink-800/60'
+                          ? 'border-brand-500 bg-gradient-to-br from-brand-600/15 to-brand-900/10 ring-1 ring-brand-500/40 shadow-glow-purple'
+                          : 'border-ink-200 bg-ink-800/30 hover:border-brand-500/40 hover:bg-ink-800/50'
                       } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                     >
                       {selected && (
-                        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
+                        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white shadow-glow-purple">
                           <Check className="h-3 w-3" />
                         </span>
                       )}
-                      <PaymentIcon type={opt.iconType} className="h-11 w-11 rounded-lg" />
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${selected ? 'ring-2 ring-brand-500/30' : 'ring-1 ring-ink-200/50'} transition-transform group-hover:scale-105`}>
+                        <PaymentIcon type={opt.iconType} className="h-11 w-11 rounded-xl" />
+                      </div>
                       <div>
                         <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
-                        <p className="text-xs text-ink-400">{opt.description}</p>
+                        <p className="mt-0.5 text-xs text-ink-400">{opt.description}</p>
                       </div>
+                      {opt.isGiftCard && (
+                        <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-400">
+                          <Gift className="h-2.5 w-2.5" /> Gift Card
+                        </span>
+                      )}
                     </button>
                   );
                 })}
