@@ -552,7 +552,7 @@ export function WithdrawPage() {
                     <div className="flex items-center gap-3">
                       <PaymentIcon type={methodIconType(wd.method)} className="h-10 w-10 rounded-xl" />
                       <div>
-                        <p className="text-sm font-bold text-white">{formatMoney(wd.amount)}</p>
+                        <p className="text-sm font-bold text-danger-400">-{formatMoney(wd.amount)}</p>
                         <p className="text-xs text-ink-400">
                           {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
                         </p>

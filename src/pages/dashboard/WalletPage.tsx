@@ -11,6 +11,12 @@ import { WalletTransaction } from '@/types';
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+const formatSignedMoney = (n: number) => {
+  const abs = Math.abs(Number(n));
+  const str = `₹${abs.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return Number(n) >= 0 ? `+${str}` : `-${str}`;
+};
+
 const typeLabels: Record<string, string> = {
   task_reward: 'Task Reward',
   referral_reward: 'Referral Reward',
@@ -102,7 +108,7 @@ export function WalletPage() {
             </div>
             <div>
               <p className="text-sm text-ink-400">Total Debited</p>
-              <p className="text-xl font-bold text-ink-50">{formatMoney(Math.abs(totalOut))}</p>
+              <p className="text-xl font-bold text-danger-400">-{formatMoney(Math.abs(totalOut))}</p>
             </div>
           </div>
         </Card>
@@ -138,7 +144,7 @@ export function WalletPage() {
               return (
                 <div key={tx.id} className="flex items-center justify-between rounded-xl px-3 py-3 hover:bg-ink-800/50">
                   <div className="flex items-center gap-3">
-                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${positive ? 'bg-accent-400/10 text-accent-400' : 'bg-warning-500/15 text-warning-400'}`}>
+                    <div className={`grid h-10 w-10 place-items-center rounded-xl ${positive ? 'bg-accent-400/10 text-accent-400' : 'bg-danger-500/10 text-danger-400'}`}>
                       {positive ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
                     </div>
                     <div>
@@ -150,10 +156,10 @@ export function WalletPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`text-sm font-bold ${positive ? 'text-accent-400' : 'text-ink-50'}`}>
-                      {positive ? '+' : ''}{formatMoney(tx.amount)}
+                    <p className={`text-sm font-bold ${positive ? 'text-accent-400' : 'text-danger-400'}`}>
+                      {formatSignedMoney(tx.amount)}
                     </p>
-                    <span className="text-xs capitalize text-ink-400">{tx.status}</span>
+                    <span className="text-xs capitalize text-ink-400">{tx.status === 'completed' ? 'Success' : tx.status === 'paid' ? 'Success' : tx.status}</span>
                   </div>
                 </div>
               );

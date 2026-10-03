@@ -15,11 +15,20 @@ export function Badge({ children, tone = 'neutral', className = '' }: { children
   return <span className={`badge ${tones[tone]} ${className}`}>{children}</span>;
 }
 
+const statusLabels: Record<string, string> = {
+  pending: 'Pending',
+  processing: 'Pending',
+  approved: 'Approved',
+  paid: 'Success',
+  completed: 'Success',
+  rejected: 'Rejected',
+};
+
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, Tone> = {
     pending: 'warning',
     active: 'success',
-    approved: 'success',
+    approved: 'info',
     completed: 'success',
     paid: 'success',
     qualified: 'success',
@@ -34,7 +43,7 @@ export function StatusBadge({ status }: { status: string }) {
     resolved: 'success',
     closed: 'neutral',
   };
-  return <Badge tone={map[status] ?? 'neutral'}>{status}</Badge>;
+  return <Badge tone={map[status] ?? 'neutral'}>{statusLabels[status] ?? status}</Badge>;
 }
 
 export function PriorityBadge({ priority }: { priority: string }) {

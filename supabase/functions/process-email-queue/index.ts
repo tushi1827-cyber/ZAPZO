@@ -37,7 +37,7 @@ function isAdminRequest(req: Request): boolean {
   }
   try {
     const payload = JSON.parse(atob(parts[1]));
-    return payload?.app_metadata?.is_admin === true;
+    return payload?.app_metadata?.is_admin === true || payload?.role === "service_role";
   } catch {
     return false;
   }
