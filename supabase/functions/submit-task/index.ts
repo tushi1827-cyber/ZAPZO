@@ -64,7 +64,23 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!proof_text || proof_text.trim().length < 10) {
+    // Fetch the task to check proof_required
+    const { data: taskData, error: taskErr } = await adminClient
+      .from("tasks")
+      .select("proof_required")
+      .eq("id", task_id)
+      .maybeSingle();
+
+    if (taskErr || !taskData) {
+      return new Response(
+        JSON.stringify({ error: "Task not found." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const proofRequired = taskData.proof_required !== false;
+
+    if (proofRequired && (!proof_text || proof_text.trim().length < 10)) {
       return new Response(
         JSON.stringify({ error: "Please provide detailed proof (at least 10 characters)." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },

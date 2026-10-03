@@ -22,7 +22,8 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const emptyForm = {
   title: '', description: '', instructions: '', category: 'social' as TaskCategory,
   reward: '50', max_completions: '100', verification_type: 'manual' as VerificationType,
-  status: 'active' as TaskStatus, start_date: '', end_date: '', task_link: '',
+  status: 'active' as TaskStatus, proof_required: 'yes' as 'yes' | 'no',
+  start_date: '', end_date: '', task_link: '',
   auto_verification_type: '' as AutoVerificationType | '',
   auto_verification_target_url: '',
   auto_verification_keywords: '',
@@ -89,6 +90,7 @@ export function AdminTasksPage() {
       max_completions: String(task.max_completions),
       verification_type: task.verification_type,
       status: task.status,
+      proof_required: task.proof_required ? 'yes' : 'no',
       start_date: task.start_date ? new Date(task.start_date).toISOString().slice(0, 10) : '',
       end_date: task.end_date ? new Date(task.end_date).toISOString().slice(0, 10) : '',
       task_link: task.task_link || '',
@@ -242,6 +244,7 @@ export function AdminTasksPage() {
       max_completions: maxC,
       verification_type: form.verification_type,
       status: form.status,
+      proof_required: form.proof_required === 'yes',
       start_date: form.start_date ? new Date(form.start_date).toISOString() : null,
       end_date: form.end_date ? new Date(form.end_date).toISOString() : null,
       task_link: taskLink,
@@ -496,7 +499,10 @@ export function AdminTasksPage() {
               <option value="manual">Manual</option>
               <option value="automatic">Automatic</option>
             </Select>
-            <div></div>
+            <Select label="Proof Required?" name="proof_required" value={form.proof_required} onChange={(e) => setForm({ ...form, proof_required: e.target.value as 'yes' | 'no' })}>
+              <option value="yes">Yes — Proof Required</option>
+              <option value="no">No — Proof Not Required</option>
+            </Select>
             <Input label="Start Date (optional)" type="date" name="start_date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
             <Input label="End Date (optional)" type="date" name="end_date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
           </div>

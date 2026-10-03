@@ -16,6 +16,12 @@ import { WalletTransaction, TaskSubmission, Referral } from '@/types';
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+const formatSignedMoney = (n: number) => {
+  const abs = Math.abs(Number(n));
+  const str = `₹${abs.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return Number(n) >= 0 ? `+${str}` : `-${str}`;
+};
+
 export function DashboardPage() {
   const { user, profile } = useAuth();
   const { stats, loading, error } = useDashboardStats();
@@ -142,11 +148,19 @@ export function DashboardPage() {
               {txns.map((tx) => (
                 <div key={tx.id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-ink-800/50">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink-50">{tx.description}</p>
+                    <p className="truncate text-sm font-medium text-ink-50">
+                      {tx.type === 'withdrawal'
+                        ? tx.status === 'completed' || tx.status === 'paid'
+                          ? 'Withdrawal Success'
+                          : tx.status === 'reversed'
+                            ? 'Withdrawal Reversed'
+                            : 'Withdrawal Request'
+                        : tx.description}
+                    </p>
                     <p className="text-xs capitalize text-ink-400">{tx.type.replace(/_/g, ' ')}</p>
                   </div>
-                  <span className={`shrink-0 text-sm font-bold ${Number(tx.amount) >= 0 ? 'text-accent-400' : 'text-ink-400'}`}>
-                    {Number(tx.amount) >= 0 ? '+' : ''}{formatMoney(tx.amount)}
+                  <span className={`shrink-0 text-sm font-bold ${Number(tx.amount) >= 0 ? 'text-accent-400' : 'text-danger-400'}`}>
+                    {formatSignedMoney(tx.amount)}
                   </span>
                 </div>
               ))}

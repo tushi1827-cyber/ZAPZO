@@ -69,6 +69,7 @@ export interface Task {
   task_link: string | null;
   auto_verification_type: AutoVerificationType | null;
   auto_verification_config: AutoVerificationConfig | null;
+  proof_required: boolean;
   start_date: string | null;
   end_date: string | null;
   created_by: string | null;

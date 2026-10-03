@@ -135,7 +135,7 @@ export function TaskDetailPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !user) return;
-    if (proof.trim().length < 10) {
+    if (task?.proof_required && proof.trim().length < 10) {
       setError('Please provide detailed proof (at least 10 characters).');
       return;
     }
@@ -370,11 +370,13 @@ export function TaskDetailPage() {
 
       {canSubmit ? (
         <Card className="p-6">
-          <h2 className="font-bold text-white">Submit Proof</h2>
+          <h2 className="font-bold text-white">{task.proof_required ? 'Submit Proof' : 'Submit Task'}</h2>
           <p className="mt-1 text-sm text-ink-400">
-            {task.verification_type === 'automatic'
-              ? 'Submit your proof below. The system will automatically verify your submission and credit your reward if valid.'
-              : 'Provide detailed proof of task completion. Our admin team will review it.'}
+            {task.proof_required
+              ? task.verification_type === 'automatic'
+                ? 'Submit your proof below. The system will automatically verify your submission and credit your reward if valid.'
+                : 'Provide detailed proof of task completion. Our admin team will review it.'
+              : 'Submit this task to complete it. Our admin team will review your submission.'}
           </p>
           {success && (
             <div className="mt-3 flex items-center gap-2 rounded-xl bg-accent-400/10 p-3">
@@ -396,10 +398,11 @@ export function TaskDetailPage() {
               value={proof}
               onChange={(e) => setProof(e.target.value)}
               rows={6}
-              required
+              required={task.proof_required}
             />
 
-            {/* Screenshot upload */}
+            {/* Screenshot upload — only show when proof is required */}
+            {task.proof_required && (
             <div>
               <label className="label">Screenshot Proof</label>
               <p className="mb-2 text-xs text-ink-400">Supported: PNG, JPG, JPEG, WebP. Maximum size: 10MB.</p>
@@ -481,10 +484,11 @@ export function TaskDetailPage() {
                 </p>
               )}
             </div>
+            )}
 
             {error && <div className="rounded-xl bg-danger-500/10 p-3 text-sm text-danger-400">{error}</div>}
             <Button type="submit" disabled={isDisabled}>
-              {submitting ? <Spinner size="sm" /> : <><Send className="h-4 w-4" /> Submit Proof</>}
+              {submitting ? <Spinner size="sm" /> : <><Send className="h-4 w-4" /> {task.proof_required ? 'Submit Proof' : 'Submit Task'}</>}
             </Button>
           </form>
         </Card>
