@@ -1,8 +1,29 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
-export function LegalLayout({ title, children, lastUpdated }: { title: string; lastUpdated?: string; children: ReactNode }) {
+interface LegalLayoutProps {
+  title: string;
+  description?: string;
+  lastUpdated?: string;
+  children: ReactNode;
+}
+
+export function LegalLayout({ title, description, lastUpdated, children }: LegalLayoutProps) {
+  useEffect(() => {
+    document.title = `${title} — ZAPZO`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', description || `${title} for the ZAPZO task-and-referral rewards platform.`);
+    }
+    return () => {
+      document.title = 'ZAPZO — Do Tasks. Earn Rewards.';
+      if (metaDesc) {
+        metaDesc.setAttribute('content', 'Complete verified tasks, earn rewards, and grow through qualified referrals on ZAPZO.');
+      }
+    };
+  }, [title, description]);
+
   return (
     <div className="min-h-screen flex flex-col bg-ink-950">
       <Navbar />

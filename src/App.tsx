@@ -45,6 +45,7 @@ const AdminEmailTestPage = lazy(() => import('@/pages/admin/AdminEmailTestPage')
 
 const TermsPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.PrivacyPage })));
+const WithdrawalPolicyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.WithdrawalPolicyPage })));
 const ResponsibleEarningPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.ResponsibleEarningPage })));
 const ContactPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.ContactPage })));
 const SupportPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.SupportPage })));
@@ -74,6 +75,7 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/withdrawal-policy" element={<WithdrawalPolicyPage />} />
               <Route path="/responsible-earning" element={<ResponsibleEarningPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/support" element={<SupportPage />} />

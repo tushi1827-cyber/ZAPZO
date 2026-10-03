@@ -597,6 +597,19 @@ export function WithdrawPage() {
           </Card>
           <Card className="p-5">
             <div className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-brand-400" />
+              <h3 className="font-bold text-white">Withdrawal Policy</h3>
+            </div>
+            <p className="mt-2 text-xs text-ink-400">
+              Before requesting a withdrawal, please review our{' '}
+              <Link to="/withdrawal-policy" className="text-brand-400 font-medium hover:text-brand-300">
+                Withdrawal Policy
+              </Link>{' '}
+              for details on eligibility, processing, and important information about payout details.
+            </p>
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-brand-400" />
               <h3 className="font-bold text-white">Gift Card Delivery</h3>
             </div>

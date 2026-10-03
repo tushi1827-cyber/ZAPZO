@@ -15,6 +15,7 @@ const columns = [
     links: [
       { label: 'Terms', to: '/terms' },
       { label: 'Privacy', to: '/privacy' },
+      { label: 'Withdrawal Policy', to: '/withdrawal-policy' },
       { label: 'Responsible Earning', to: '/responsible-earning' },
     ],
   },
