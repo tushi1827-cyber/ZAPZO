@@ -12,7 +12,6 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod, Settings, GiftCardDenomination } from '@/types';
-import { PaymentIcon, PaymentIconType } from '@/components/PaymentMethodIcons';
 
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -50,16 +49,15 @@ interface PaymentMethodOption {
   value: WithdrawalMethod;
   label: string;
   description: string;
-  iconType: PaymentIconType;
   isGiftCard: boolean;
 }
 
 const PAYMENT_METHODS: PaymentMethodOption[] = [
-  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', iconType: 'upi', isGiftCard: false },
-  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', iconType: 'bank', isGiftCard: false },
-  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', iconType: 'amazon', isGiftCard: true },
-  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', iconType: 'flipkart', isGiftCard: true },
-  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', iconType: 'google_play', isGiftCard: true },
+  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', isGiftCard: false },
+  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', isGiftCard: false },
+  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', isGiftCard: true },
+  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', isGiftCard: true },
+  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', isGiftCard: true },
 ];
 
 const GIFT_CARD_PROVIDERS: WithdrawalMethod[] = ['amazon_gift_card', 'flipkart_gift_card', 'google_play_gift_card'];
@@ -71,11 +69,6 @@ function isGiftCardMethod(m: WithdrawalMethod): boolean {
 function methodLabel(m: WithdrawalMethod): string {
   const found = PAYMENT_METHODS.find((p) => p.value === m);
   return found ? found.label : m.replace('_', ' ');
-}
-
-function methodIconType(m: WithdrawalMethod): PaymentIconType {
-  const found = PAYMENT_METHODS.find((p) => p.value === m);
-  return found ? found.iconType : 'bank';
 }
 
 export function WithdrawPage() {
@@ -320,6 +313,13 @@ export function WithdrawPage() {
             {/* Payment Method Selection */}
             <div className="mt-5">
               <label className="label">Select Payment Method</label>
+              <div className="mt-3 overflow-hidden rounded-2xl border border-ink-200 bg-ink-950/40 p-2 sm:p-3">
+                <img
+                  src="/image.png"
+                  alt="UPI, Bank Transfer, Amazon Gift Card, Flipkart Gift Card, and Google Play Gift Card"
+                  className="block h-auto w-full object-contain"
+                />
+              </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {PAYMENT_METHODS.map((opt) => {
                   const selected = method === opt.value;
@@ -340,9 +340,6 @@ export function WithdrawPage() {
                           <Check className="h-3 w-3" />
                         </span>
                       )}
-                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${selected ? 'ring-2 ring-brand-500/30' : 'ring-1 ring-ink-200/50'} transition-transform group-hover:scale-105`}>
-                        <PaymentIcon type={opt.iconType} className="h-11 w-11 rounded-xl" />
-                      </div>
                       <div>
                         <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
                         <p className="mt-0.5 text-xs text-ink-400">{opt.description}</p>
@@ -374,7 +371,6 @@ export function WithdrawPage() {
                     hint={upiError ? undefined : 'Enter your UPI ID (e.g. yourname@oksbi)'}
                   />
                   <div className="mt-2 flex items-center gap-2 rounded-lg bg-ink-800/40 px-3 py-2">
-                    <PaymentIcon type="upi" className="h-6 w-6 rounded" />
                     <p className="text-xs text-ink-400">Accepted: any valid UPI ID (e.g. name@upi, 9876543210@ybl)</p>
                   </div>
                 </div>
@@ -507,10 +503,7 @@ export function WithdrawPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-ink-400">Payment Method</span>
-                    <span className="flex items-center gap-2 font-medium text-white">
-                      <PaymentIcon type={methodIconType(method)} className="h-5 w-5 rounded" />
-                      {methodLabel(method)}
-                    </span>
+                    <span className="font-medium text-white">{methodLabel(method)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ink-400">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
@@ -557,7 +550,6 @@ export function WithdrawPage() {
                 {withdrawals.map((wd) => (
                   <div key={wd.id} className="flex items-center justify-between rounded-xl border border-ink-200 p-4">
                     <div className="flex items-center gap-3">
-                      <PaymentIcon type={methodIconType(wd.method)} className="h-10 w-10 rounded-xl" />
                       <div>
                         <p className="text-sm font-bold text-danger-400">-{formatMoney(wd.amount)}</p>
                         <p className="text-xs text-ink-400">
