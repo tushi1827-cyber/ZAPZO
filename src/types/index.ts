@@ -168,7 +168,9 @@ export type NotificationType =
   | 'success'
   | 'danger'
   | 'support_reply'
-  | 'ticket_status_changed';
+  | 'ticket_status_changed'
+  | 'feedback_received'
+  | 'feedback_status_changed';
 
 export interface Notification {
   id: string;
@@ -272,4 +274,20 @@ export interface TicketActivityLog {
   old_value: string | null;
   new_value: string | null;
   created_at: string;
+}
+
+export type FeedbackType = 'feedback' | 'suggestion' | 'bug' | 'report';
+export type FeedbackStatus = 'open' | 'reviewing' | 'resolved' | 'closed';
+
+export interface UserFeedback {
+  id: string;
+  user_id: string;
+  type: FeedbackType;
+  subject: string | null;
+  message: string;
+  status: FeedbackStatus;
+  admin_note: string | null;
+  created_at: string;
+  updated_at: string;
+  profile?: { name: string; referral_code: string };
 }

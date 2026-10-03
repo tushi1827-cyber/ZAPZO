@@ -25,6 +25,7 @@ const WithdrawPage = lazy(() => import('@/pages/dashboard/WithdrawPage').then(m 
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
+const DashboardFeedbackPage = lazy(() => import('@/pages/dashboard/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
 const TicketDetailPage = lazy(() => import('@/pages/dashboard/TicketDetailPage').then(m => ({ default: m.TicketDetailPage })));
 
 const AdminLayout = lazy(() => import('@/components/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -42,6 +43,8 @@ const AdminSupportPage = lazy(() => import('@/pages/admin/AdminSupportPage').the
 const AdminTicketDetailPage = lazy(() => import('@/pages/admin/AdminTicketDetailPage').then(m => ({ default: m.AdminTicketDetailPage })));
 const AdminHomepageEditorPage = lazy(() => import('@/pages/admin/AdminHomepageEditorPage').then(m => ({ default: m.AdminHomepageEditorPage })));
 const AdminEmailTestPage = lazy(() => import('@/pages/admin/AdminEmailTestPage').then(m => ({ default: m.AdminEmailTestPage })));
+const AdminFeedbackPage = lazy(() => import('@/pages/admin/AdminFeedbackPage').then(m => ({ default: m.AdminFeedbackPage })));
+const AdminFeedbackDetailPage = lazy(() => import('@/pages/admin/AdminFeedbackDetailPage').then(m => ({ default: m.AdminFeedbackDetailPage })));
 
 const TermsPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.PrivacyPage })));
@@ -99,6 +102,7 @@ export default function App() {
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="support" element={<DashboardSupportPage />} />
                 <Route path="support/:id" element={<TicketDetailPage />} />
+                <Route path="feedback" element={<DashboardFeedbackPage />} />
               </Route>
 
               {/* Admin panel (protected + admin) */}
@@ -117,6 +121,8 @@ export default function App() {
                 <Route path="support/:id" element={<AdminTicketDetailPage />} />
                 <Route path="homepage" element={<AdminHomepageEditorPage />} />
                 <Route path="email-test" element={<AdminEmailTestPage />} />
+                <Route path="feedback" element={<AdminFeedbackPage />} />
+                <Route path="feedback/:id" element={<AdminFeedbackDetailPage />} />
               </Route>
 
               {/* Fallback */}
