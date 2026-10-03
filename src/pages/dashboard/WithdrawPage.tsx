@@ -49,15 +49,16 @@ interface PaymentMethodOption {
   value: WithdrawalMethod;
   label: string;
   description: string;
+  visualPosition: string;
   isGiftCard: boolean;
 }
 
 const PAYMENT_METHODS: PaymentMethodOption[] = [
-  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', isGiftCard: false },
-  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', isGiftCard: false },
-  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', isGiftCard: true },
-  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', isGiftCard: true },
-  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', isGiftCard: true },
+  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', visualPosition: '0% center', isGiftCard: false },
+  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', visualPosition: '25% center', isGiftCard: false },
+  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', visualPosition: '50% center', isGiftCard: true },
+  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', visualPosition: '75% center', isGiftCard: true },
+  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', visualPosition: '100% center', isGiftCard: true },
 ];
 
 const GIFT_CARD_PROVIDERS: WithdrawalMethod[] = ['amazon_gift_card', 'flipkart_gift_card', 'google_play_gift_card'];
@@ -313,13 +314,6 @@ export function WithdrawPage() {
             {/* Payment Method Selection */}
             <div className="mt-5">
               <label className="label">Select Payment Method</label>
-              <div className="mt-3 overflow-hidden rounded-2xl border border-ink-200 bg-ink-950/40 p-2 sm:p-3">
-                <img
-                  src="/image.png"
-                  alt="UPI, Bank Transfer, Amazon Gift Card, Flipkart Gift Card, and Google Play Gift Card"
-                  className="block h-auto w-full object-contain"
-                />
-              </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {PAYMENT_METHODS.map((opt) => {
                   const selected = method === opt.value;
@@ -340,6 +334,18 @@ export function WithdrawPage() {
                           <Check className="h-3 w-3" />
                         </span>
                       )}
+                      <div
+                        role="img"
+                        aria-label={`${opt.label} payment method visual`}
+                        className="w-full overflow-hidden rounded-xl bg-ink-950/60"
+                        style={{
+                          aspectRatio: '3 / 5',
+                          backgroundImage: 'url(/image.png)',
+                          backgroundPosition: opt.visualPosition,
+                          backgroundRepeat: 'no-repeat',
+                          backgroundSize: '500% 100%',
+                        }}
+                      />
                       <div>
                         <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
                         <p className="mt-0.5 text-xs text-ink-400">{opt.description}</p>
