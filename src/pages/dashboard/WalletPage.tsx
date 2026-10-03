@@ -148,7 +148,15 @@ export function WalletPage() {
                       {positive ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{tx.description}</p>
+                      <p className="text-sm font-medium text-white">
+                        {tx.type === 'withdrawal'
+                          ? tx.status === 'completed' || tx.status === 'paid'
+                            ? 'Withdrawal Success'
+                            : tx.status === 'reversed'
+                              ? 'Withdrawal Reversed'
+                              : 'Withdrawal Request'
+                          : tx.description}
+                      </p>
                       <div className="flex items-center gap-2">
                         <Badge tone={typeTone[tx.type] || 'neutral'}>{typeLabels[tx.type] || tx.type}</Badge>
                         <span className="text-xs text-ink-400">{new Date(tx.created_at).toLocaleDateString()}</span>
