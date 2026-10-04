@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { ProtectedRoute, AdminRoute } from '@/components/ProtectedRoute';
+import { ProtectedRoute, AdminRoute, AdminPermissionRoute } from '@/components/ProtectedRoute';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { FullPageSpinner } from '@/components/ui/Feedback';
@@ -45,6 +45,7 @@ const AdminHomepageEditorPage = lazy(() => import('@/pages/admin/AdminHomepageEd
 const AdminEmailTestPage = lazy(() => import('@/pages/admin/AdminEmailTestPage').then(m => ({ default: m.AdminEmailTestPage })));
 const AdminFeedbackPage = lazy(() => import('@/pages/admin/AdminFeedbackPage').then(m => ({ default: m.AdminFeedbackPage })));
 const AdminFeedbackDetailPage = lazy(() => import('@/pages/admin/AdminFeedbackDetailPage').then(m => ({ default: m.AdminFeedbackDetailPage })));
+const AdminRolesPage = lazy(() => import('@/pages/admin/AdminRolesPage').then(m => ({ default: m.AdminRolesPage })));
 
 const TermsPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('@/pages/legal/LegalPages').then(m => ({ default: m.PrivacyPage })));
@@ -108,21 +109,22 @@ export default function App() {
               {/* Admin panel (protected + admin) */}
               <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                 <Route index element={<AdminDashboardPage />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="tasks" element={<AdminTasksPage />} />
-                <Route path="submissions" element={<AdminSubmissionsPage />} />
-                <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
-                <Route path="referrals" element={<AdminReferralsPage />} />
-                <Route path="transactions" element={<AdminTransactionsPage />} />
-                <Route path="settings" element={<AdminSettingsPage />} />
-                <Route path="audit-logs" element={<AdminAuditLogsPage />} />
-                <Route path="fraud" element={<AdminFraudPage />} />
-                <Route path="support" element={<AdminSupportPage />} />
-                <Route path="support/:id" element={<AdminTicketDetailPage />} />
-                <Route path="homepage" element={<AdminHomepageEditorPage />} />
-                <Route path="email-test" element={<AdminEmailTestPage />} />
-                <Route path="feedback" element={<AdminFeedbackPage />} />
-                <Route path="feedback/:id" element={<AdminFeedbackDetailPage />} />
+                <Route path="users" element={<AdminPermissionRoute permission="users"><AdminUsersPage /></AdminPermissionRoute>} />
+                <Route path="tasks" element={<AdminPermissionRoute permission="tasks"><AdminTasksPage /></AdminPermissionRoute>} />
+                <Route path="submissions" element={<AdminPermissionRoute permission="submissions"><AdminSubmissionsPage /></AdminPermissionRoute>} />
+                <Route path="withdrawals" element={<AdminPermissionRoute permission="withdrawals"><AdminWithdrawalsPage /></AdminPermissionRoute>} />
+                <Route path="referrals" element={<AdminPermissionRoute permission="referrals"><AdminReferralsPage /></AdminPermissionRoute>} />
+                <Route path="transactions" element={<AdminPermissionRoute permission="transactions"><AdminTransactionsPage /></AdminPermissionRoute>} />
+                <Route path="settings" element={<AdminPermissionRoute permission="settings"><AdminSettingsPage /></AdminPermissionRoute>} />
+                <Route path="audit-logs" element={<AdminPermissionRoute permission="audit_logs"><AdminAuditLogsPage /></AdminPermissionRoute>} />
+                <Route path="fraud" element={<AdminPermissionRoute permission="fraud"><AdminFraudPage /></AdminPermissionRoute>} />
+                <Route path="support" element={<AdminPermissionRoute permission="support"><AdminSupportPage /></AdminPermissionRoute>} />
+                <Route path="support/:id" element={<AdminPermissionRoute permission="support"><AdminTicketDetailPage /></AdminPermissionRoute>} />
+                <Route path="homepage" element={<AdminPermissionRoute permission="homepage"><AdminHomepageEditorPage /></AdminPermissionRoute>} />
+                <Route path="email-test" element={<AdminPermissionRoute permission="email_test"><AdminEmailTestPage /></AdminPermissionRoute>} />
+                <Route path="feedback" element={<AdminPermissionRoute permission="feedback"><AdminFeedbackPage /></AdminPermissionRoute>} />
+                <Route path="feedback/:id" element={<AdminPermissionRoute permission="feedback"><AdminFeedbackDetailPage /></AdminPermissionRoute>} />
+                <Route path="roles" element={<AdminPermissionRoute permission="roles"><AdminRolesPage /></AdminPermissionRoute>} />
               </Route>
 
               {/* Fallback */}

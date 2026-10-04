@@ -170,7 +170,12 @@ export type NotificationType =
   | 'support_reply'
   | 'ticket_status_changed'
   | 'feedback_received'
-  | 'feedback_status_changed';
+  | 'feedback_status_changed'
+  | 'admin_withdrawal_requested'
+  | 'admin_submission_pending'
+  | 'admin_support_reply'
+  | 'admin_risk_alert'
+  | 'admin_role_changed';
 
 export interface Notification {
   id: string;
@@ -290,4 +295,22 @@ export interface UserFeedback {
   created_at: string;
   updated_at: string;
   profile?: { name: string; referral_code: string };
+}
+
+export type AdminRole = 'super_admin' | 'moderator' | 'support' | 'finance';
+
+export type AdminPermission =
+  | 'users' | 'tasks' | 'submissions' | 'withdrawals' | 'transactions'
+  | 'referrals' | 'settings' | 'audit_logs' | 'fraud' | 'support'
+  | 'feedback' | 'homepage' | 'email_test' | 'roles';
+
+export interface AdminRoleAssignment {
+  id: string;
+  user_id: string;
+  role: AdminRole;
+  created_at: string;
+  created_by: string | null;
+  user_name: string | null;
+  user_referral_code: string | null;
+  assigner_name: string | null;
 }

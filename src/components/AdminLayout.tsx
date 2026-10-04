@@ -3,30 +3,40 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   Shield, Users, ClipboardList, FileCheck, ArrowDownToLine, Share2,
   Wallet, Settings as SettingsIcon, LayoutDashboard, Menu, X, LogOut, ScrollText,
-  ShieldAlert, Headset, LayoutTemplate, Mail, MessageSquare,
+  ShieldAlert, Headset, LayoutTemplate, Mail, MessageSquare, KeyRound,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
+import { AdminPermission } from '@/types';
 
-const navItems = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/admin/users', label: 'Users', icon: Users },
-  { to: '/admin/tasks', label: 'Tasks', icon: ClipboardList },
-  { to: '/admin/submissions', label: 'Submissions', icon: FileCheck },
-  { to: '/admin/withdrawals', label: 'Withdrawals', icon: ArrowDownToLine },
-  { to: '/admin/referrals', label: 'Referrals', icon: Share2 },
-  { to: '/admin/transactions', label: 'Transactions', icon: Wallet },
-  { to: '/admin/settings', label: 'Settings', icon: SettingsIcon },
-  { to: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText },
-  { to: '/admin/fraud', label: 'Fraud & Abuse', icon: ShieldAlert },
-  { to: '/admin/support', label: 'Support Tickets', icon: Headset },
-  { to: '/admin/feedback', label: 'Feedback & Reports', icon: MessageSquare },
-  { to: '/admin/homepage', label: 'Homepage Editor', icon: LayoutTemplate },
-  { to: '/admin/email-test', label: 'Email Test', icon: Mail },
+interface NavItem {
+  to: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  permission: AdminPermission;
+  exact?: boolean;
+}
+
+const navItems: NavItem[] = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, permission: 'users', exact: true },
+  { to: '/admin/users', label: 'Users', icon: Users, permission: 'users' },
+  { to: '/admin/tasks', label: 'Tasks', icon: ClipboardList, permission: 'tasks' },
+  { to: '/admin/submissions', label: 'Submissions', icon: FileCheck, permission: 'submissions' },
+  { to: '/admin/withdrawals', label: 'Withdrawals', icon: ArrowDownToLine, permission: 'withdrawals' },
+  { to: '/admin/referrals', label: 'Referrals', icon: Share2, permission: 'referrals' },
+  { to: '/admin/transactions', label: 'Transactions', icon: Wallet, permission: 'transactions' },
+  { to: '/admin/settings', label: 'Settings', icon: SettingsIcon, permission: 'settings' },
+  { to: '/admin/audit-logs', label: 'Audit Logs', icon: ScrollText, permission: 'audit_logs' },
+  { to: '/admin/fraud', label: 'Fraud & Abuse', icon: ShieldAlert, permission: 'fraud' },
+  { to: '/admin/support', label: 'Support Tickets', icon: Headset, permission: 'support' },
+  { to: '/admin/feedback', label: 'Feedback & Reports', icon: MessageSquare, permission: 'feedback' },
+  { to: '/admin/homepage', label: 'Homepage Editor', icon: LayoutTemplate, permission: 'homepage' },
+  { to: '/admin/email-test', label: 'Email Test', icon: Mail, permission: 'email_test' },
+  { to: '/admin/roles', label: 'Roles & Permissions', icon: KeyRound, permission: 'roles' },
 ];
 
 export function AdminLayout() {
-  const { profile, signOut } = useAuth();
+  const { profile, isSuperAdmin, hasPermission, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -35,6 +45,11 @@ export function AdminLayout() {
     await signOut();
     navigate('/');
   };
+
+  const visibleItems = navItems.filter(item => {
+    if (item.exact) return true;
+    return isSuperAdmin || hasPermission(item.permission);
+  });
 
   const NavContent = () => (
     <div className="flex h-full flex-col">
@@ -50,8 +65,10 @@ export function AdminLayout() {
         </div>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-        {navItems.map((item) => {
-          const active = location.pathname === item.to;
+        {visibleItems.map((item) => {
+          const active = item.exact
+            ? location.pathname === item.to
+            : location.pathname.startsWith(item.to);
           return (
             <Link
               key={item.to}

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { Profile } from '@/types';
+import { Profile, AdminPermission } from '@/types';
 
 interface AuthContextValue {
   session: Session | null;
@@ -9,6 +9,9 @@ interface AuthContextValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  permissions: AdminPermission[];
+  hasPermission: (perm: AdminPermission) => boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -20,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [permissions, setPermissions] = useState<AdminPermission[]>([]);
 
   const loadProfile = useCallback(async (uid: string) => {
     const { data, error } = await supabase
@@ -31,9 +35,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(data as Profile | null);
   }, []);
 
+  const loadPermissions = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_admin_permissions');
+      if (!error && data) {
+        setPermissions(data as AdminPermission[]);
+      } else {
+        setPermissions([]);
+      }
+    } catch {
+      setPermissions([]);
+    }
+  }, []);
+
   const refreshProfile = useCallback(async () => {
     if (user) await loadProfile(user.id);
-  }, [user, loadProfile]);
+    await loadPermissions();
+  }, [user, loadProfile, loadPermissions]);
 
   useEffect(() => {
     let mounted = true;
@@ -43,7 +61,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(data.session);
       setUser(data.session?.user ?? null);
       if (data.session?.user) {
-        loadProfile(data.session.user.id).finally(() => mounted && setLoading(false));
+        Promise.all([
+          loadProfile(data.session.user.id),
+          loadPermissions(),
+        ]).finally(() => mounted && setLoading(false));
       } else {
         setLoading(false);
       }
@@ -54,9 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
-          await loadProfile(newSession.user.id);
+          await Promise.all([
+            loadProfile(newSession.user.id),
+            loadPermissions(),
+          ]);
         } else {
           setProfile(null);
+          setPermissions([]);
         }
         setLoading(false);
       })();
@@ -66,20 +91,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       sub.subscription.unsubscribe();
     };
-  }, [loadProfile]);
+  }, [loadProfile, loadPermissions]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     setProfile(null);
+    setPermissions([]);
   }, []);
 
   const isAdmin = Boolean(
     profile?.is_admin || user?.app_metadata?.is_admin === true,
   );
 
+  const isSuperAdmin = isAdmin;
+
+  const hasPermission = useCallback((perm: AdminPermission) => {
+    if (isSuperAdmin) return true;
+    return permissions.includes(perm);
+  }, [isSuperAdmin, permissions]);
+
   return (
     <AuthContext.Provider
-      value={{ session, user, profile, loading, isAdmin, refreshProfile, signOut }}
+      value={{ session, user, profile, loading, isAdmin, isSuperAdmin, permissions, hasPermission, refreshProfile, signOut }}
     >
       {children}
     </AuthContext.Provider>

@@ -5,6 +5,7 @@ import {
   Menu, X, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
   CheckCircle2, XCircle, Banknote, Clock, Gift, Send, Sparkles,
   CheckCheck, ExternalLink, LifeBuoy, MessageCircle, MessageSquare,
+  Headset, ShieldAlert, KeyRound,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -49,6 +50,11 @@ const typeIcon: Record<string, typeof Bell> = {
   ticket_status_changed: LifeBuoy,
   feedback_received: MessageSquare,
   feedback_status_changed: MessageSquare,
+  admin_withdrawal_requested: ArrowDownToLine,
+  admin_submission_pending: FileCheck,
+  admin_support_reply: Headset,
+  admin_risk_alert: ShieldAlert,
+  admin_role_changed: KeyRound,
   success: CheckCircle2,
   danger: XCircle,
 };
@@ -80,6 +86,11 @@ const typeTone: Record<string, string> = {
   ticket_status_changed: 'info',
   feedback_received: 'brand',
   feedback_status_changed: 'info',
+  admin_withdrawal_requested: 'warning',
+  admin_submission_pending: 'info',
+  admin_support_reply: 'brand',
+  admin_risk_alert: 'danger',
+  admin_role_changed: 'info',
   success: 'success',
   danger: 'danger',
 };

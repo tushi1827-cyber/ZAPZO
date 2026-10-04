@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Bell, CheckCircle2, XCircle, Banknote, Clock, Gift, Wallet,
   CheckCheck, Trash2, ExternalLink, Send, ArrowDownToLine, Users, Sparkles,
-  LifeBuoy, MessageCircle,
+  LifeBuoy, MessageCircle, MessageSquare, FileCheck, Headset, ShieldAlert, KeyRound,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -35,6 +35,13 @@ const typeIcon: Record<string, typeof Bell> = {
   wallet_adjustment: Wallet,
   support_reply: MessageCircle,
   ticket_status_changed: LifeBuoy,
+  feedback_received: MessageSquare,
+  feedback_status_changed: MessageSquare,
+  admin_withdrawal_requested: ArrowDownToLine,
+  admin_submission_pending: FileCheck,
+  admin_support_reply: Headset,
+  admin_risk_alert: ShieldAlert,
+  admin_role_changed: KeyRound,
   success: CheckCircle2,
   danger: XCircle,
 };
@@ -56,6 +63,13 @@ const typeTone: Record<string, 'success' | 'danger' | 'warning' | 'brand' | 'inf
   wallet_adjustment: 'info',
   support_reply: 'brand',
   ticket_status_changed: 'info',
+  feedback_received: 'brand',
+  feedback_status_changed: 'info',
+  admin_withdrawal_requested: 'warning',
+  admin_submission_pending: 'info',
+  admin_support_reply: 'brand',
+  admin_risk_alert: 'danger',
+  admin_role_changed: 'info',
   success: 'success',
   danger: 'danger',
 };
