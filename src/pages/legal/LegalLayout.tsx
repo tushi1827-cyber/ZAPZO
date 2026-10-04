@@ -29,8 +29,9 @@ export function LegalLayout({ title, description, lastUpdated, children }: Legal
       <Navbar />
       <main className="flex-1 mx-auto max-w-4xl w-full px-4 py-12 sm:px-6">
         <h1 className="text-3xl font-bold text-white sm:text-4xl">{title}</h1>
-        {lastUpdated && <p className="mt-2 text-sm text-ink-400">Last updated: {lastUpdated}</p>}
-        <div className="mt-8 prose prose-sm prose-invert max-w-none text-ink-400 space-y-4">
+        {description && <p className="mt-2 text-sm text-ink-400">{description}</p>}
+        {lastUpdated && <p className="mt-1 text-sm text-ink-400">Last updated: {lastUpdated}</p>}
+        <div className="mt-8 max-w-none space-y-4 text-sm leading-relaxed text-ink-400 sm:text-[15px] [&_h2]:mt-6 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h3]:mt-4 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-white [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_p]:text-ink-400 [&_a]:text-brand-400 [&_a]:font-medium [&_a:hover]:text-brand-300 [&_strong]:text-ink-50">
           {children}
         </div>
       </main>
