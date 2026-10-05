@@ -6,3 +6,6 @@ verify_jwt = true
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.offerwall-postback]
+verify_jwt = false

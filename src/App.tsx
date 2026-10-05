@@ -26,6 +26,7 @@ const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage').then(m =>
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
 const DashboardFeedbackPage = lazy(() => import('@/pages/dashboard/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
+const OffersPage = lazy(() => import('@/pages/dashboard/OffersPage').then(m => ({ default: m.OffersPage })));
 const TicketDetailPage = lazy(() => import('@/pages/dashboard/TicketDetailPage').then(m => ({ default: m.TicketDetailPage })));
 
 const AdminLayout = lazy(() => import('@/components/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -104,6 +105,7 @@ export default function App() {
                 <Route path="support" element={<DashboardSupportPage />} />
                 <Route path="support/:id" element={<TicketDetailPage />} />
                 <Route path="feedback" element={<DashboardFeedbackPage />} />
+                <Route path="offers" element={<OffersPage />} />
               </Route>
 
               {/* Admin panel (protected + admin) */}
