@@ -9,9 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { Profile, WalletTransaction, Referral } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<Profile[]>([]);
@@ -99,7 +97,7 @@ export function AdminUsersPage() {
       setAdjError(rpcErr.message);
       return;
     }
-    setAdjSuccess(`Adjustment of ${formatMoney(signedAmount)} applied successfully.`);
+    setAdjSuccess(`Adjustment of ${formatCoins(signedAmount)} applied successfully.`);
     setAdjAmount('');
     setAdjDescription('');
     await openDetail(selected);
@@ -220,7 +218,7 @@ export function AdminUsersPage() {
               <>
                 <div className="rounded-xl bg-brand-600/10 p-4">
                   <p className="text-xs text-ink-400">Wallet Balance</p>
-                  <p className="text-2xl font-bold text-brand-400">{wallet ? formatMoney(wallet.balance) : '—'}</p>
+                  <p className="text-2xl font-bold text-brand-400">{wallet ? formatCoins(wallet.balance) : '—'}</p>
                 </div>
 
                 <div>
@@ -234,7 +232,7 @@ export function AdminUsersPage() {
                             <p className="text-xs text-ink-400 capitalize">{tx.type.replace(/_/g, ' ')}</p>
                           </div>
                           <span className={`text-sm font-bold ${Number(tx.amount) >= 0 ? 'text-accent-400' : 'text-ink-400'}`}>
-                            {Number(tx.amount) >= 0 ? '+' : ''}{formatMoney(tx.amount)}
+                            {Number(tx.amount) >= 0 ? '+' : ''}{formatCoins(tx.amount)}
                           </span>
                         </div>
                       ))}
@@ -312,7 +310,7 @@ export function AdminUsersPage() {
                         type="number"
                         step="0.01"
                         min="0"
-                        placeholder="Amount (INR)"
+                        placeholder="Amount (Coins)"
                         value={adjAmount}
                         onChange={(e) => setAdjAmount(e.target.value)}
                       />

@@ -6,15 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const formatSignedMoney = (n: number) => {
-  const abs = Math.abs(Number(n));
-  const str = `₹${abs.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return Number(n) >= 0 ? `+${str}` : `-${str}`;
-};
+import { formatSignedCoins } from '@/lib/format';
 
 const typeLabels: Record<string, string> = {
   task_reward: 'Task Reward',
@@ -117,7 +109,7 @@ export function AdminTransactionsPage() {
                       <td className="px-4 py-3">
                         <span className={`flex items-center gap-1 font-bold ${positive ? 'text-accent-400' : 'text-danger-400'}`}>
                           {positive ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                          {formatSignedMoney(tx.amount)}
+                          {formatSignedCoins(tx.amount)}
                         </span>
                       </td>
                       <td className="px-4 py-3 capitalize text-ink-400">{tx.status}</td>

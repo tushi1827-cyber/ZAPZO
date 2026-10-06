@@ -11,8 +11,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { Task, TaskCategory, TaskStatus, VerificationType, AutoVerificationType } from '@/types';
 
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 const categories: TaskCategory[] = ['social', 'survey', 'website', 'app', 'learning', 'other'];
 const statuses: TaskStatus[] = ['draft', 'active', 'paused', 'completed', 'expired'];
 
@@ -387,7 +386,7 @@ export function AdminTasksPage() {
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <Badge tone="neutral" className="capitalize">{task.category}</Badge>
                     </td>
-                    <td className="px-4 py-3 font-bold text-accent-400">{formatMoney(task.reward)}</td>
+                    <td className="px-4 py-3 font-bold text-accent-400">{formatCoins(task.reward)}</td>
                     <td className="px-4 py-3 hidden md:table-cell text-ink-400">{task.approved_count}/{task.max_completions}</td>
                     <td className="px-4 py-3"><StatusBadge status={task.status} /></td>
                     <td className="px-4 py-3">
@@ -493,7 +492,7 @@ export function AdminTasksPage() {
             <Select label="Status" name="status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as TaskStatus })}>
               {statuses.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
             </Select>
-            <Input label="Reward (INR)" type="number" step="0.01" name="reward" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} />
+            <Input label="Reward (Coins)" type="number" step="1" name="reward" value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} />
             <Input label="Max Completions" type="number" name="max_completions" value={form.max_completions} onChange={(e) => setForm({ ...form, max_completions: e.target.value })} />
             <Select label="Verification Type" name="verification_type" value={form.verification_type} onChange={(e) => setForm({ ...form, verification_type: e.target.value as VerificationType, auto_verification_type: '' })}>
               <option value="manual">Manual</option>

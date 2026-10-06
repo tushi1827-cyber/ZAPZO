@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings as SettingsIcon, Save, IndianRupee, Users, Gift, Plus, Trash2, Power } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Coins, Users, Gift, Plus, Trash2, Power } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -7,9 +7,7 @@ import { Spinner } from '@/components/ui/Feedback';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { Settings as SettingsType, GiftCardDenomination, GiftCardProvider } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 const PROVIDERS: { value: GiftCardProvider; label: string }[] = [
   { value: 'amazon_gift_card', label: 'Amazon Gift Card' },
@@ -92,7 +90,7 @@ export function AdminSettingsPage() {
       return;
     }
     setNewDenomValue('');
-    setDenomSuccess(`Added ${formatMoney(val)} to ${PROVIDERS.find((p) => p.value === provider)?.label}.`);
+    setDenomSuccess(`Added ${formatCoins(val)} to ${PROVIDERS.find((p) => p.value === provider)?.label}.`);
     setTimeout(() => setDenomSuccess(''), 3000);
     await reloadDenominations();
   };
@@ -144,12 +142,12 @@ export function AdminSettingsPage() {
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <label className="label flex items-center gap-2">
-                  <IndianRupee className="h-4 w-4 text-ink-400" />
-                  Minimum Withdrawal (INR)
+                  <Coins className="h-4 w-4 text-ink-400" />
+                  Minimum Withdrawal (Coins)
                 </label>
                 <Input
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
                   value={String(settings?.min_withdrawal ?? '')}
                   onChange={(e) => setSettings({ ...settings!, min_withdrawal: parseFloat(e.target.value) })}
@@ -159,11 +157,11 @@ export function AdminSettingsPage() {
               <div>
                 <label className="label flex items-center gap-2">
                   <Users className="h-4 w-4 text-ink-400" />
-                  Referral Reward (INR)
+                  Referral Reward (Coins)
                 </label>
                 <Input
                   type="number"
-                  step="0.01"
+                  step="1"
                   min="0"
                   value={String(settings?.referral_reward ?? '')}
                   onChange={(e) => setSettings({ ...settings!, referral_reward: parseFloat(e.target.value) })}
@@ -224,7 +222,7 @@ export function AdminSettingsPage() {
                           }`}
                         >
                           <span className={`text-sm font-semibold ${d.is_active ? 'text-brand-400' : 'text-ink-400'}`}>
-                            {formatMoney(d.value)}
+                            {formatCoins(d.value)}
                           </span>
                           <button
                             onClick={() => handleToggleDenomination(d)}
@@ -277,8 +275,8 @@ export function AdminSettingsPage() {
         <Card className="p-5">
           <h3 className="font-semibold text-white">About These Settings</h3>
           <ul className="mt-2 space-y-1.5 text-sm text-ink-400">
-            <li>• <strong className="text-ink-50">Minimum Withdrawal</strong> — enforced server-side by the request_withdrawal function.</li>
-            <li>• <strong className="text-ink-50">Referral Reward</strong> — applied automatically when a referral qualifies (after referred user's task is approved).</li>
+            <li>• <strong className="text-ink-50">Minimum Withdrawal</strong> — stored in Coins, enforced server-side by the request_withdrawal function.</li>
+            <li>• <strong className="text-ink-50">Referral Reward</strong> — stored in Coins, applied automatically when a referral qualifies (after referred user's task is approved).</li>
             <li>• <strong className="text-ink-50">Gift Card Denominations</strong> — changes take effect immediately. Existing withdrawals are not affected.</li>
             <li>• Changes take effect immediately for all new operations.</li>
           </ul>

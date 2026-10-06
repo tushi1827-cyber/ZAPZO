@@ -9,9 +9,7 @@ import { Modal } from '@/components/ui/Modal';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { TaskSubmission } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 interface SubWithRelations extends Omit<TaskSubmission, 'task'> {
   task?: { title: string; reward: number; category: string };
@@ -154,7 +152,7 @@ export function AdminSubmissionsPage() {
                       <p className="text-xs text-ink-400 font-mono">{s.user?.referral_code}</p>
                     </td>
                     <td className="px-4 py-3 font-bold text-accent-400">
-                      {s.status === 'approved' ? formatMoney(s.reward_amount) : formatMoney(s.task?.reward ?? 0)}
+                      {s.status === 'approved' ? formatCoins(s.reward_amount) : formatCoins(s.task?.reward ?? 0)}
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={s.status} /></td>
                     <td className="px-4 py-3 hidden sm:table-cell text-ink-400">{new Date(s.created_at).toLocaleDateString()}</td>
@@ -194,7 +192,7 @@ export function AdminSubmissionsPage() {
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
                 <p className="text-xs text-ink-400">Reward</p>
-                <p className="font-bold text-accent-400">{formatMoney(selected.task?.reward ?? 0)}</p>
+                <p className="font-bold text-accent-400">{formatCoins(selected.task?.reward ?? 0)}</p>
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
                 <p className="text-xs text-ink-400">Status</p>
@@ -229,7 +227,7 @@ export function AdminSubmissionsPage() {
 
             {selected.status === 'approved' && (
               <div className="rounded-xl bg-accent-400/10 p-3">
-                <p className="text-sm text-accent-400">This submission was approved. Reward: {formatMoney(selected.reward_amount)}</p>
+                <p className="text-sm text-accent-400">This submission was approved. Reward: {formatCoins(selected.reward_amount)}</p>
                 {selected.is_auto_verified && selected.auto_verification_result && (
                   <p className="mt-1 flex items-center gap-1 text-xs text-ink-400">
                     <Zap className="h-3 w-3" /> Auto-verification result: {selected.auto_verification_result.reason}

@@ -128,12 +128,11 @@ function ctaButton(url: string, label: string): string {
 
 function formatAmount(payload: Record<string, unknown>): string | undefined {
   const amount = payload.amount as number | string | undefined;
-  const currency = (payload.currency as string | undefined) || "INR";
   if (amount === undefined || amount === null) return undefined;
-  const formatted = typeof amount === "number"
-    ? amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : String(amount);
-  return `${currency} ${formatted}`;
+  const n = typeof amount === "number" ? amount : Number(amount);
+  if (isNaN(n)) return undefined;
+  const coins = n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+  return `${coins} Coins`;
 }
 
 const TEMPLATE_CONFIG: Record<string, { subject: string; ctaLabel: string }> = {

@@ -8,9 +8,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { TaskSubmission } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 type FilterType = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -144,7 +142,7 @@ export function MySubmissionsPage() {
                     <span className="capitalize">{sub.task?.category || 'other'}</span>
                     <span>{new Date(sub.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     {sub.status === 'approved' && sub.reward_amount > 0 && (
-                      <span className="font-semibold text-accent-400">{formatMoney(sub.reward_amount)} earned</span>
+                      <span className="font-semibold text-accent-400">{formatCoins(sub.reward_amount)} earned</span>
                     )}
                   </div>
                   {sub.status === 'rejected' && sub.rejection_reason && (

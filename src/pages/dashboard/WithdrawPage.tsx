@@ -12,9 +12,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod, Settings, GiftCardDenomination } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 const UPI_BASIC_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
 
@@ -150,7 +148,7 @@ export function WithdrawPage() {
 
   const handleDenominationSelect = (d: GiftCardDenomination) => {
     if (d.value > balance) {
-      setError(`Insufficient balance for ${formatMoney(d.value)}. Available: ${formatMoney(balance)}.`);
+      setError(`Insufficient balance for ${formatCoins(d.value)}. Available: ${formatCoins(balance)}.`);
       return;
     }
     setSelectedDenominationId(d.id);
@@ -174,7 +172,7 @@ export function WithdrawPage() {
         return { valid: false, amt: 0, details: '' };
       }
       if (denom.value > balance) {
-        setError(`Insufficient balance. Available: ${formatMoney(balance)}.`);
+        setError(`Insufficient balance. Available: ${formatCoins(balance)}.`);
         return { valid: false, amt: 0, details: '' };
       }
       if (!giftCardEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(giftCardEmail.trim())) {
@@ -190,11 +188,11 @@ export function WithdrawPage() {
         return { valid: false, amt: 0, details: '' };
       }
       if (amt < minWithdrawal) {
-        setError(`Minimum withdrawal is ${formatMoney(minWithdrawal)}.`);
+        setError(`Minimum withdrawal is ${formatCoins(minWithdrawal)}.`);
         return { valid: false, amt: 0, details: '' };
       }
       if (amt > balance) {
-        setError(`Insufficient balance. Available: ${formatMoney(balance)}.`);
+        setError(`Insufficient balance. Available: ${formatCoins(balance)}.`);
         return { valid: false, amt: 0, details: '' };
       }
 
@@ -258,8 +256,8 @@ export function WithdrawPage() {
     }
     setSuccess(
       isGiftCard
-        ? `${methodLabel(method)} request for ${formatMoney(amt)} submitted! We will send the gift card to your email.`
-        : `Withdrawal request for ${formatMoney(amt)} submitted! Our team will review it shortly.`,
+        ? `${methodLabel(method)} request for ${formatCoins(amt)} submitted! We will send the gift card to your email.`
+        : `Withdrawal request for ${formatCoins(amt)} submitted! Our team will review it shortly.`,
     );
     setAmount('');
     setUpiId('');
@@ -293,7 +291,7 @@ export function WithdrawPage() {
               <h2 className="font-bold text-white">New Withdrawal</h2>
               <div className="text-right">
                 <p className="text-xs text-ink-400">Available Balance</p>
-                <p className="text-lg font-bold text-accent-400">{formatMoney(balance)}</p>
+                <p className="text-lg font-bold text-accent-400">{formatCoins(balance)}</p>
               </div>
             </div>
 
@@ -471,7 +469,7 @@ export function WithdrawPage() {
                               </span>
                             )}
                             <p className={`text-lg font-bold ${selected ? 'text-brand-400' : 'text-white'}`}>
-                              {formatMoney(d.value)}
+                              {formatCoins(d.value)}
                             </p>
                             {insufficient && (
                               <p className="mt-0.5 text-xs text-danger-400">Insufficient balance</p>
@@ -487,15 +485,15 @@ export function WithdrawPage() {
               {/* Manual Amount for UPI / Bank Transfer */}
               {!isGiftCard && (
                 <Input
-                  label="Withdrawal Amount (INR)"
+                  label="Withdrawal Amount (Coins)"
                   type="number"
                   step="0.01"
                   name="amount"
-                  placeholder={`Min: ${formatMoney(minWithdrawal)}`}
+                  placeholder={`Min: ${formatCoins(minWithdrawal)}`}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   disabled={hasPending || balance < minWithdrawal}
-                  hint={`Minimum withdrawal: ${formatMoney(minWithdrawal)} • Available: ${formatMoney(balance)}`}
+                  hint={`Minimum withdrawal: ${formatCoins(minWithdrawal)} • Available: ${formatCoins(balance)}`}
                 />
               )}
 
@@ -505,7 +503,7 @@ export function WithdrawPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-ink-400">Available Balance</span>
-                    <span className="font-medium text-white">{formatMoney(balance)}</span>
+                    <span className="font-medium text-white">{formatCoins(balance)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-ink-400">Payment Method</span>
@@ -515,16 +513,16 @@ export function WithdrawPage() {
                     <span className="text-ink-400">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
                     <span className="font-medium text-white">
                       {isGiftCard
-                        ? (selectedDenominationId ? formatMoney(Number(amount)) : '—')
-                        : (amount ? formatMoney(parseFloat(amount) || 0) : '—')}
+                        ? (selectedDenominationId ? formatCoins(Number(amount)) : '—')
+                        : (amount ? formatCoins(parseFloat(amount) || 0) : '—')}
                     </span>
                   </div>
                   <div className="border-t border-ink-200 pt-2 flex justify-between">
                     <span className="font-semibold text-ink-50">Final Amount</span>
                     <span className="font-bold text-accent-400">
                       {isGiftCard
-                        ? (selectedDenominationId ? formatMoney(Number(amount)) : '—')
-                        : (amount ? formatMoney(parseFloat(amount) || 0) : '—')}
+                        ? (selectedDenominationId ? formatCoins(Number(amount)) : '—')
+                        : (amount ? formatCoins(parseFloat(amount) || 0) : '—')}
                     </span>
                   </div>
                 </div>
@@ -557,7 +555,7 @@ export function WithdrawPage() {
                   <div key={wd.id} className="flex items-center justify-between rounded-xl border border-ink-200 p-4">
                     <div className="flex items-center gap-3">
                       <div>
-                        <p className="text-sm font-bold text-danger-400">-{formatMoney(wd.amount)}</p>
+                        <p className="text-sm font-bold text-danger-400">-{formatCoins(wd.amount)}</p>
                         <p className="text-xs text-ink-400">
                           {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
                         </p>

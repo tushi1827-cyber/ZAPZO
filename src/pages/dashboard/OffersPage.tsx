@@ -202,11 +202,11 @@ export function OffersPage() {
                   <div className="flex items-center gap-3">
                     {offer.status === 'reversed' ? (
                       <span className="text-sm font-semibold text-danger-400">
-                        -{Math.abs(offer.points).toLocaleString('en-IN', { maximumFractionDigits: 4 })}
+                        -{Math.abs(offer.points).toLocaleString('en-IN', { maximumFractionDigits: 0 })} pts
                       </span>
                     ) : (
                       <span className="text-sm font-semibold text-accent-400">
-                        +{offer.points.toLocaleString('en-IN', { maximumFractionDigits: 4 })}
+                        +{offer.points.toLocaleString('en-IN', { maximumFractionDigits: 0 })} pts
                       </span>
                     )}
                     <span

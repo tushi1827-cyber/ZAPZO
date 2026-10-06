@@ -12,9 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins, coinsToINR } from '@/lib/format';
 
 interface WdWithUser extends Withdrawal {
   user?: { name: string; referral_code: string };
@@ -167,7 +165,7 @@ export function AdminWithdrawalsPage() {
                       <p className="font-medium text-white">{w.user?.name || 'User'}</p>
                       <p className="text-xs font-mono text-ink-400">{w.user?.referral_code}</p>
                     </td>
-                    <td className="px-4 py-3 font-bold text-white">{formatMoney(w.amount)}</td>
+                    <td className="px-4 py-3 font-bold text-white">{formatCoins(w.amount)}</td>
                     <td className="px-4 py-3 hidden sm:table-cell">
                       <div className="flex items-center gap-2">
                         <MethodIcon method={w.method} className="h-4 w-4 text-ink-400" />
@@ -201,7 +199,7 @@ export function AdminWithdrawalsPage() {
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
                 <p className="text-xs text-ink-400">{isGiftCardMethod(selected.method) ? 'Gift Card Value' : 'Amount'}</p>
-                <p className="text-2xl font-bold text-brand-400">{formatMoney(selected.amount)}</p>
+                <p className="text-2xl font-bold text-brand-400">{formatCoins(selected.amount)}</p>
               </div>
               <div className="rounded-xl bg-ink-800/50 p-3">
                 <p className="text-xs text-ink-400">Payment Method</p>
@@ -222,11 +220,11 @@ export function AdminWithdrawalsPage() {
                 <div className="flex items-center gap-2">
                   <Gift className="h-5 w-5 text-brand-400" />
                   <p className="font-semibold text-brand-400">
-                    {methodLabel(selected.method)} — {formatMoney(selected.amount)}
+                    {methodLabel(selected.method)} — {formatCoins(selected.amount)}
                   </p>
                 </div>
                 <p className="mt-1 text-xs text-ink-400">
-                  This withdrawal requires purchasing and sending a {methodLabel(selected.method)} worth {formatMoney(selected.amount)} to the user's email.
+                  This withdrawal requires purchasing and sending a {methodLabel(selected.method)} worth {formatCoins(selected.amount)} (≈ ₹{coinsToINR(selected.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}) to the user's email.
                 </p>
                 {(() => {
                   const email = parsePayoutEmail(selected.payout_details);

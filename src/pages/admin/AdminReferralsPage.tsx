@@ -5,9 +5,7 @@ import { Spinner, EmptyState } from '@/components/ui/Feedback';
 import { StatusBadge } from '@/components/ui/Badge';
 import { AdminPageWrapper } from '@/components/AdminLayout';
 import { supabase } from '@/lib/supabase';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+import { formatCoins } from '@/lib/format';
 
 interface AdminReferral {
   id: string;
@@ -55,7 +53,7 @@ export function AdminReferralsPage() {
   const statCards = [
     { label: 'Total Referrals', value: totalReferrals, icon: Users, tone: 'bg-brand-600/15 text-brand-400' },
     { label: 'Qualified', value: qualified, icon: CheckCircle2, tone: 'bg-success-500/15 text-success-400' },
-    { label: 'Rewards Paid', value: formatMoney(totalRewards), icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Rewards Paid', value: formatCoins(totalRewards), icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
     { label: 'Reversed', value: suspicious, icon: AlertTriangle, tone: 'bg-danger-500/15 text-danger-400' },
   ];
 
@@ -120,7 +118,7 @@ export function AdminReferralsPage() {
                       <p className="text-xs font-mono text-ink-400">{r.referred?.referral_code}</p>
                     </td>
                     <td className="px-4 py-3 font-bold text-accent-400">
-                      {r.status === 'qualified' ? formatMoney(r.reward_amount) : '—'}
+                      {r.status === 'qualified' ? formatCoins(r.reward_amount) : '—'}
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
                     <td className="px-4 py-3 hidden sm:table-cell text-ink-400">{new Date(r.created_at).toLocaleDateString()}</td>

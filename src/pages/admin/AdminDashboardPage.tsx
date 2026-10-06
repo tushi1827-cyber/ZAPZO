@@ -14,6 +14,7 @@ import { AdminPageWrapper } from '@/components/AdminLayout';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { AdminPermission } from '@/types';
+import { formatCoins, formatCoinsShort } from '@/lib/format';
 
 type DateRange = 'today' | '7d' | '30d' | 'this_month' | 'all_time';
 
@@ -23,16 +24,6 @@ const dateRangeLabels: Record<DateRange, string> = {
   '30d': 'Last 30 Days',
   this_month: 'This Month',
   all_time: 'All Time',
-};
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const formatMoneyShort = (n: number) => {
-  if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)}Cr`;
-  if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`;
-  if (n >= 1000) return `₹${(n / 1000).toFixed(1)}K`;
-  return `₹${n.toFixed(0)}`;
 };
 
 interface DashboardData {
@@ -317,16 +308,16 @@ export function AdminDashboardPage() {
                 <MetricCard label="Pending Submissions" value={data.summary.pending_submissions || 0} icon={FileCheck} tone="bg-warning-500/15 text-warning-400" sub="Awaiting review" />
               )}
               {canSee('withdrawals') && (
-                <MetricCard label="Pending Withdrawals" value={data.summary.pending_withdrawals || 0} icon={ArrowDownToLine} tone="bg-warning-500/15 text-warning-400" sub={formatMoneyShort(data.summary.pending_withdrawal_amount || 0)} />
+                <MetricCard label="Pending Withdrawals" value={data.summary.pending_withdrawals || 0} icon={ArrowDownToLine} tone="bg-warning-500/15 text-warning-400" sub={formatCoinsShort(data.summary.pending_withdrawal_amount || 0)} />
               )}
               {canSee('transactions') && (
-                <MetricCard label="Total Rewards" value={formatMoneyShort(data.summary.total_rewards || 0)} icon={Coins} tone="bg-accent-400/10 text-accent-400" sub="Distributed" />
+                <MetricCard label="Total Rewards" value={formatCoinsShort(data.summary.total_rewards || 0)} icon={Coins} tone="bg-accent-400/10 text-accent-400" sub="Distributed" />
               )}
               {canSee('transactions') && (
-                <MetricCard label="Referral Rewards" value={formatMoneyShort(data.summary.referral_rewards || 0)} icon={Share2} tone="bg-accent-400/10 text-accent-400" sub="Distributed" />
+                <MetricCard label="Referral Rewards" value={formatCoinsShort(data.summary.referral_rewards || 0)} icon={Share2} tone="bg-accent-400/10 text-accent-400" sub="Distributed" />
               )}
               {canSee('withdrawals') && (
-                <MetricCard label="Total Paid Out" value={formatMoneyShort(data.summary.total_paid_out || 0)} icon={Banknote} tone="bg-success-500/15 text-success-400" sub="Completed withdrawals" />
+                <MetricCard label="Total Paid Out" value={formatCoinsShort(data.summary.total_paid_out || 0)} icon={Banknote} tone="bg-success-500/15 text-success-400" sub="Completed withdrawals" />
               )}
               {canSee('support') && (
                 <MetricCard label="Open Tickets" value={data.summary.open_tickets || 0} icon={Headset} tone="bg-brand-600/15 text-brand-400" sub="Needs response" />
@@ -444,7 +435,7 @@ export function AdminDashboardPage() {
                       {data.recent.withdrawals.map(w => (
                         <div key={w.id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-ink-800/50">
                           <div className="min-w-0">
-                            <p className="text-sm font-bold text-ink-50">{formatMoney(Number(w.amount))}</p>
+                            <p className="text-sm font-bold text-ink-50">{formatCoins(Number(w.amount))}</p>
                             <p className="text-xs text-ink-400">{w.user_name} · {w.method} · {timeAgo(w.created_at)}</p>
                           </div>
                           <StatusBadge status={w.status} />
@@ -469,7 +460,7 @@ export function AdminDashboardPage() {
                       {data.recent.transactions.map(t => (
                         <div key={t.id} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-ink-800/50">
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-ink-50">{formatMoney(Number(t.amount))}</p>
+                            <p className="text-sm font-medium text-ink-50">{formatCoins(Number(t.amount))}</p>
                             <p className="text-xs text-ink-400 capitalize">{t.type.replace(/_/g, ' ')} · {t.user_name}</p>
                           </div>
                           <StatusBadge status={t.status} />

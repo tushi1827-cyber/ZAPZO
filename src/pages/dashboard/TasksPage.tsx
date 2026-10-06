@@ -144,7 +144,7 @@ export function TasksPage() {
                 <h3 className="mt-3 font-bold text-white">{task.title}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-ink-400">{task.description}</p>
                 <div className="mt-4 flex items-center gap-4 text-xs text-ink-400">
-                  <span className="flex items-center gap-1"><Coins className="h-4 w-4 text-accent-400" /> ₹{Number(task.reward).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="flex items-center gap-1"><Coins className="h-4 w-4 text-accent-400" /> {Number(task.reward).toLocaleString('en-IN', { maximumFractionDigits: 0 })} Coins</span>
                   <span className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-ink-400" /> {task.approved_count}/{task.max_completions} approved</span>
                   {task.status === 'paused' && <span className="flex items-center gap-1 text-warning-400"><AlertCircle className="h-3.5 w-3.5" /> paused</span>}
                 </div>

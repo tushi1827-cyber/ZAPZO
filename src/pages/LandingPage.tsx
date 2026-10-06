@@ -171,9 +171,9 @@ export function LandingPage() {
             </div>
             <div className="space-y-4">
               {[
-                { title: 'Follow & Share Social Campaign', cat: 'Social', reward: '₹50', icon: Share2 },
-                { title: 'Complete Product Survey', cat: 'Survey', reward: '₹120', icon: ClipboardList },
-                { title: 'Test New App Feature', cat: 'App', reward: '₹200', icon: Fingerprint },
+                { title: 'Follow & Share Social Campaign', cat: 'Social', reward: '500 Coins', icon: Share2 },
+                { title: 'Complete Product Survey', cat: 'Survey', reward: '1,200 Coins', icon: ClipboardList },
+                { title: 'Test New App Feature', cat: 'App', reward: '2,000 Coins', icon: Fingerprint },
               ].map((task) => (
                 <Card key={task.title} hover className="flex items-center gap-4 p-5">
                   <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent-400/10 text-accent-400">

@@ -12,15 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction, TaskSubmission, Referral } from '@/types';
-
-const formatMoney = (n: number) =>
-  `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const formatSignedMoney = (n: number) => {
-  const abs = Math.abs(Number(n));
-  const str = `₹${abs.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  return Number(n) >= 0 ? `+${str}` : `-${str}`;
-};
+import { formatCoins, formatSignedCoins } from '@/lib/format';
 
 export function DashboardPage() {
   const { user, profile } = useAuth();
@@ -51,16 +43,16 @@ export function DashboardPage() {
   if (loading && !stats) return <Spinner size="lg" className="py-20" />;
 
   const statCards = [
-    { label: 'Available Balance', value: stats ? formatMoney(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
-    { label: 'Pending Rewards', value: stats ? formatMoney(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
-    { label: 'Total Earned', value: stats ? formatMoney(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
-    { label: 'Referral Earnings', value: stats ? formatMoney(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Available Balance', value: stats ? formatCoins(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
+    { label: 'Pending Rewards', value: stats ? formatCoins(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
+    { label: 'Total Earned', value: stats ? formatCoins(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Referral Earnings', value: stats ? formatCoins(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
   ];
 
   const statRow = [
     { label: 'Tasks Completed', value: stats?.tasksCompleted ?? 0, icon: ClipboardList },
     { label: 'Qualified Referrals', value: stats?.qualifiedReferrals ?? 0, icon: CheckCircle2 },
-    { label: 'Total Withdrawals', value: stats ? formatMoney(stats.totalWithdrawals) : '—', icon: ArrowDownToLine },
+    { label: 'Total Withdrawals', value: stats ? formatCoins(stats.totalWithdrawals) : '—', icon: ArrowDownToLine },
   ];
 
   const quickActions = [
@@ -160,7 +152,7 @@ export function DashboardPage() {
                     <p className="text-xs capitalize text-ink-400">{tx.type.replace(/_/g, ' ')}</p>
                   </div>
                   <span className={`shrink-0 text-sm font-bold ${Number(tx.amount) >= 0 ? 'text-accent-400' : 'text-danger-400'}`}>
-                    {formatSignedMoney(tx.amount)}
+                    {formatSignedCoins(tx.amount)}
                   </span>
                 </div>
               ))}
@@ -205,7 +197,7 @@ export function DashboardPage() {
                   <p className="text-xs text-ink-400">{ref.referred?.referral_code}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  {ref.reward_amount > 0 && <span className="text-sm font-bold text-accent-400">{formatMoney(ref.reward_amount)}</span>}
+                  {ref.reward_amount > 0 && <span className="text-sm font-bold text-accent-400">{formatCoins(ref.reward_amount)}</span>}
                   <StatusBadge status={ref.status} />
                 </div>
               </div>
