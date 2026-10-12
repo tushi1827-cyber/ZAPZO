@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Sparkles,
   ExternalLink,
@@ -10,9 +10,22 @@ import {
   Trophy,
   Target,
   CheckCircle2,
+  ListChecks,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/lib/supabase';
+import { Database } from '@/lib/supabase';
+
+const OFFERS_CACHE_TTL = 120_000;
+
+interface OffersCache {
+  userId: string;
+  offers: NormalizedOffer[];
+  timestamp: number;
+}
+
+let offersCache: OffersCache | null = null;
 
 interface OfferwallTransaction {
   id: string;
@@ -24,25 +37,298 @@ interface OfferwallTransaction {
   created_at: string;
 }
 
-interface Offer {
-  id: number;
+interface RawGoal {
+  id?: string | number;
+  gl_val?: string | null;
+  ttl?: string | null;
+  instr?: string | null;
+  pyt?: { cur?: string; amt?: number } | null;
+  inapp_pyt?: { cur?: string; amt?: number } | null;
+  ord?: number;
+}
+
+interface NormalizedGoal {
+  id: string;
+  title: string;
+  instructions: string | null;
+  rewardFormatted: string | null;
+  order: number;
+}
+
+interface NormalizedOffer {
+  id: string;
   name: string;
-  description: string;
-  requirements: string;
-  reward: number;
-  rewardFormatted: string;
-  rewardIsVariable: boolean;
+  description: string | null;
   image: string | null;
   category: string | null;
   type: string | null;
   clickUrl: string | null;
+  rewardFormatted: string;
+  rewardIsVariable: boolean;
   multipleConversions: boolean;
   featured: boolean;
+  goals: NormalizedGoal[];
+}
+
+function isAbsoluteUrl(val: unknown): val is string {
+  return typeof val === 'string' && /^https?:\/\/.+/i.test(val);
+}
+
+function getString(val: unknown, fallback = ''): string {
+  if (typeof val === 'string' && val.trim()) return val.trim();
+  if (typeof val === 'number') return String(val);
+  return fallback;
+}
+
+function formatPayout(pyt: { cur?: string; amt?: number } | null | undefined): string {
+  if (!pyt || typeof pyt.amt !== 'number') return '';
+  const amt = pyt.amt.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  return `${amt} ${pyt.cur || ''}`.trim();
+}
+
+function normalizeOffer(raw: Record<string, unknown>): NormalizedOffer {
+  const id = getString(raw.id) || getString(raw.offer_id) || Math.random().toString(36);
+  const name = getString(raw.name) || getString(raw.offer_name) || 'Untitled Offer';
+
+  const descRaw =
+    typeof raw.desc === 'object' && raw.desc !== null
+      ? (raw.desc as Record<string, unknown>)
+      : null;
+  const description =
+    getString(raw.description) ||
+    getString(descRaw?.raw) ||
+    '';
+
+  const crtvs =
+    typeof raw.crtvs === 'object' && raw.crtvs !== null
+      ? (raw.crtvs as Record<string, unknown>)
+      : null;
+  const image =
+    (isAbsoluteUrl(raw.image) ? raw.image : null) ||
+    (isAbsoluteUrl(crtvs?.ic_url) ? (crtvs!.ic_url as string) : null) ||
+    null;
+
+  const ctgRaw = Array.isArray(raw.ctg) ? raw.ctg : null;
+  const category =
+    getString(raw.category) ||
+    (ctgRaw && ctgRaw.length > 0 ? getString(ctgRaw[0]) : '') ||
+    '';
+
+  const type =
+    getString(raw.type) ||
+    getString(raw.off_type) ||
+    getString(raw.offer_type) ||
+    '';
+
+  const trkUrl = isAbsoluteUrl(raw.trk_url) ? raw.trk_url : null;
+  const trkUrlBase = isAbsoluteUrl(raw.trk_url_base) ? raw.trk_url_base : null;
+  const clickUrlFlat = isAbsoluteUrl(raw.clickUrl) ? raw.clickUrl : null;
+  const lpUrl = isAbsoluteUrl(raw.lp_url) ? raw.lp_url : null;
+  const clickUrl = clickUrlFlat || trkUrl || trkUrlBase || lpUrl || null;
+
+  const pyt =
+    typeof raw.pyt === 'object' && raw.pyt !== null
+      ? (raw.pyt as { cur?: string; amt?: number })
+      : null;
+  const inappPyt =
+    typeof raw.inapp_pyt === 'object' && raw.inapp_pyt !== null
+      ? (raw.inapp_pyt as { cur?: string; amt?: number })
+      : null;
+
+  const rewardFormatted =
+    getString(raw.rewardFormatted) ||
+    formatPayout(inappPyt) ||
+    formatPayout(pyt) ||
+    getString(raw.reward ? String(raw.reward) : '') ||
+    '';
+
+  const rewardIsVariable =
+    typeof raw.rewardIsVariable === 'boolean'
+      ? raw.rewardIsVariable
+      : Array.isArray(raw.gls) && (raw.gls as RawGoal[]).length > 1;
+
+  const multipleConversions =
+    typeof raw.multipleConversions === 'boolean'
+      ? raw.multipleConversions
+      : Array.isArray(raw.ctg) && (raw.ctg as string[]).includes('MULTI_REWARD');
+
+  const featured =
+    typeof raw.featured === 'boolean'
+      ? raw.featured
+      : Array.isArray(raw.ctg) && (raw.ctg as string[]).includes('NEW');
+
+  const rawGoals = Array.isArray(raw.gls) ? (raw.gls as RawGoal[]) : [];
+  const goals: NormalizedGoal[] = rawGoals
+    .map((g): NormalizedGoal => ({
+      id: getString(g.id) || Math.random().toString(36),
+      title: getString(g.ttl) || 'Complete this goal',
+      instructions: g.instr ? getString(g.instr) : null,
+      rewardFormatted: formatPayout(g.inapp_pyt) || formatPayout(g.pyt) || null,
+      order: typeof g.ord === 'number' ? g.ord : 0,
+    }))
+    .sort((a, b) => a.order - b.order);
+
+  return {
+    id,
+    name,
+    description: description || null,
+    image,
+    category: category || null,
+    type: type || null,
+    clickUrl,
+    rewardFormatted,
+    rewardIsVariable,
+    multipleConversions,
+    featured,
+    goals,
+  };
+}
+
+function OfferCard({ offer, userId }: { offer: NormalizedOffer; userId: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const showImage = offer.image && !imgFailed;
+  const hasGoals = offer.goals.length > 0;
+  const isMultiStep = hasGoals && offer.goals.length > 1;
+  const firstGoalInstr = hasGoals ? offer.goals[0].instructions : null;
+  const requirements = firstGoalInstr || null;
+
+  const clickUrl = offer.clickUrl
+    ? offer.clickUrl.replace(/\{your_user_id\}|%7Byour_user_id%7D/g, encodeURIComponent(userId))
+    : null;
+
+  return (
+    <div className="group flex flex-col rounded-xl border border-ink-200 bg-ink-800/50 p-4 transition hover:border-brand-500/40 hover:bg-ink-800">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-ink-700">
+          <Gift className="absolute h-6 w-6 text-ink-400" />
+          {showImage && (
+            <img
+              src={offer.image!}
+              alt=""
+              className="relative h-full w-full object-cover"
+              loading="lazy"
+              onError={() => setImgFailed(true)}
+            />
+          )}
+        </div>
+        <div className="flex flex-col items-end">
+          <span className="flex items-center gap-1 text-sm font-bold text-accent-400">
+            <Trophy className="h-4 w-4" />
+            {offer.rewardIsVariable ? 'Varies' : offer.rewardFormatted || 'Reward'}
+          </span>
+          {offer.multipleConversions && (
+            <span className="mt-0.5 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-medium text-accent-400">
+              Repeatable
+            </span>
+          )}
+          {offer.featured && (
+            <span className="mt-0.5 rounded-full bg-brand-600/20 px-2 py-0.5 text-[10px] font-medium text-brand-400">
+              Featured
+            </span>
+          )}
+        </div>
+      </div>
+
+      <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-white">
+        {offer.name}
+      </h3>
+      {offer.description && (
+        <p className="mb-2 line-clamp-2 text-xs text-ink-400">
+          {offer.description}
+        </p>
+      )}
+
+      {requirements && !isMultiStep && (
+        <div className="mb-3 flex items-start gap-1.5 rounded-lg bg-ink-900/60 px-2.5 py-2">
+          <Target className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-400" />
+          <p className="line-clamp-3 whitespace-pre-line text-xs text-ink-300">
+            {requirements}
+          </p>
+        </div>
+      )}
+
+      {isMultiStep && (
+        <div className="mb-3">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="flex w-full items-center gap-1.5 rounded-lg bg-ink-900/60 px-2.5 py-2 text-xs font-medium text-brand-400 transition hover:bg-ink-900"
+          >
+            <ListChecks className="h-3.5 w-3.5 shrink-0" />
+            {offer.goals.length} steps to complete
+            {expanded ? (
+              <ChevronUp className="ml-auto h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="ml-auto h-3.5 w-3.5" />
+            )}
+          </button>
+          {expanded && (
+            <ol className="mt-2 space-y-2">
+              {offer.goals.map((goal, idx) => (
+                <li
+                  key={goal.id}
+                  className="rounded-lg border border-ink-200 bg-ink-900/40 p-2.5"
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-600/20 text-[10px] font-bold text-brand-400">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-white">
+                        {goal.title}
+                      </p>
+                      {goal.instructions && (
+                        <p className="mt-0.5 whitespace-pre-line text-[11px] text-ink-300">
+                          {goal.instructions}
+                        </p>
+                      )}
+                      {goal.rewardFormatted && (
+                        <span className="mt-1 inline-flex items-center gap-0.5 text-[10px] font-medium text-accent-400">
+                          <Trophy className="h-3 w-3" />
+                          {goal.rewardFormatted}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          )}
+        </div>
+      )}
+
+      {offer.category && (
+        <div className="mb-3">
+          <span className="rounded-full bg-ink-700 px-2 py-0.5 text-[10px] font-medium capitalize text-ink-300">
+            {offer.category.replace(/_/g, ' ').toLowerCase()}
+          </span>
+        </div>
+      )}
+
+      <div className="mt-auto pt-2">
+        {clickUrl ? (
+          <a
+            href={clickUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-500 group-hover:bg-brand-500"
+          >
+            Start Offer <ExternalLink className="h-4 w-4" />
+          </a>
+        ) : (
+          <span className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink-700 px-4 py-2.5 text-sm font-medium text-ink-400">
+            <CheckCircle2 className="h-4 w-4" /> Unavailable
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function OffersPage() {
   const { user, profile } = useAuth();
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [offers, setOffers] = useState<NormalizedOffer[]>([]);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [offersError, setOffersError] = useState<string | null>(null);
   const [recentOffers, setRecentOffers] = useState<OfferwallTransaction[]>([]);
@@ -57,6 +343,17 @@ export function OffersPage() {
 
   const fetchOffers = useCallback(async () => {
     if (!user) return;
+
+    if (
+      offersCache &&
+      offersCache.userId === user.id &&
+      Date.now() - offersCache.timestamp < OFFERS_CACHE_TTL
+    ) {
+      setOffers(offersCache.offers);
+      setLoadingOffers(false);
+      return;
+    }
+
     setLoadingOffers(true);
     setOffersError(null);
     try {
@@ -68,7 +365,7 @@ export function OffersPage() {
         return;
       }
 
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/offerwall-offers?page=1&limit=50&sort=payout`;
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/offerwall-offers?page=1&limit=20&sort=payout`;
       const response = await fetch(apiUrl, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -82,26 +379,26 @@ export function OffersPage() {
           `[OffersPage] Edge function returned ${response.status}`,
           errBody.slice(0, 200)
         );
-        if (response.status === 429) {
-          setOffersError('Too many requests. Please wait a moment and try again.');
-        } else if (response.status === 503) {
-          setOffersError('Unable to load offers right now.');
-        } else {
-          setOffersError('Unable to load offers right now.');
-        }
+        setOffersError('Unable to load offers right now.');
         setLoadingOffers(false);
         return;
       }
 
       const data = await response.json();
-      const offersArray = Array.isArray(data?.offers)
+      const rawOffers = Array.isArray(data?.offers)
         ? data.offers
         : Array.isArray(data?.data?.offers)
           ? data.data.offers
           : null;
 
-      if (offersArray) {
-        setOffers(offersArray);
+      if (rawOffers) {
+        const normalized = (rawOffers as Record<string, unknown>[]).map(normalizeOffer);
+        setOffers(normalized);
+        offersCache = {
+          userId: user.id,
+          offers: normalized,
+          timestamp: Date.now(),
+        };
       } else {
         console.error('[OffersPage] Unexpected response shape from edge function');
         setOffersError('Unable to load offers right now.');
@@ -116,8 +413,11 @@ export function OffersPage() {
     setLoadingOffers(false);
   }, [user]);
 
+  const fetchedHistoryRef = useRef(false);
+
   const fetchRecentOffers = useCallback(async () => {
-    if (!user) return;
+    if (!user || fetchedHistoryRef.current) return;
+    fetchedHistoryRef.current = true;
     try {
       const { data, error } = await supabase
         .from('offerwall_transactions')
@@ -149,7 +449,6 @@ export function OffersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold text-white">
           <Sparkles className="h-7 w-7 text-brand-400" />
@@ -161,7 +460,6 @@ export function OffersPage() {
         </p>
       </div>
 
-      {/* Info banner */}
       <div className="flex items-start gap-3 rounded-xl border border-brand-600/20 bg-brand-600/10 px-4 py-3">
         <Info className="mt-0.5 h-5 w-5 shrink-0 text-brand-400" />
         <div className="text-sm text-ink-300">
@@ -182,7 +480,6 @@ export function OffersPage() {
         </div>
       )}
 
-      {/* Sponsored Offers */}
       <div className="overflow-hidden rounded-2xl border border-ink-200 bg-ink-900">
         <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
           <div className="flex items-center gap-2">
@@ -210,7 +507,6 @@ export function OffersPage() {
         </div>
 
         <div className="p-4">
-          {/* Loading state */}
           {loadingOffers && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -228,7 +524,6 @@ export function OffersPage() {
             </div>
           )}
 
-          {/* Error state */}
           {!loadingOffers && offersError && offers.length === 0 && (
             <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
               <AlertTriangle className="mb-4 h-10 w-10 text-warning-400" />
@@ -255,7 +550,6 @@ export function OffersPage() {
             </div>
           )}
 
-          {/* Empty state */}
           {!loadingOffers && !offersError && offers.length === 0 && (
             <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
               <Sparkles className="mb-3 h-10 w-10 text-ink-400" />
@@ -277,113 +571,16 @@ export function OffersPage() {
             </div>
           )}
 
-          {/* Offers grid */}
           {!loadingOffers && !offersError && offers.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {offers.map((offer) => (
-                <div
-                  key={offer.id}
-                  className="group flex flex-col rounded-xl border border-ink-200 bg-ink-800/50 p-4 transition hover:border-brand-500/40 hover:bg-ink-800"
-                >
-                  {/* Top: icon + reward */}
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-ink-700">
-                      <Gift className="absolute h-6 w-6 text-ink-400" />
-                      {(() => {
-                        const imgUrl = offer.image;
-                        if (
-                          imgUrl &&
-                          /^https?:\/\/.+/i.test(imgUrl)
-                        ) {
-                          return (
-                            <img
-                              src={imgUrl}
-                              alt=""
-                              className="relative h-full w-full object-cover"
-                              loading="lazy"
-                              onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).style.display =
-                                  'none';
-                              }}
-                            />
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-
-                    <div className="flex flex-col items-end">
-                      <span className="flex items-center gap-1 text-sm font-bold text-accent-400">
-                        <Trophy className="h-4 w-4" />
-                        {offer.rewardIsVariable ? 'Varies' : offer.rewardFormatted}
-                      </span>
-                      {offer.multipleConversions && (
-                        <span className="mt-0.5 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-medium text-accent-400">
-                          Repeatable
-                        </span>
-                      )}
-                      {offer.featured && (
-                        <span className="mt-0.5 rounded-full bg-brand-600/20 px-2 py-0.5 text-[10px] font-medium text-brand-400">
-                          Featured
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Name + description */}
-                  <h3 className="mb-1 line-clamp-2 text-sm font-semibold text-white">
-                    {offer.name}
-                  </h3>
-                  {offer.description && (
-                    <p className="mb-2 line-clamp-2 text-xs text-ink-400">
-                      {offer.description}
-                    </p>
-                  )}
-
-                  {/* Requirements */}
-                  {offer.requirements && (
-                    <div className="mb-3 flex items-start gap-1.5 rounded-lg bg-ink-900/60 px-2.5 py-2">
-                      <Target className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-400" />
-                      <p className="line-clamp-2 text-xs text-ink-300">
-                        {offer.requirements}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Category badge */}
-                  {offer.category && (
-                    <div className="mb-3">
-                      <span className="rounded-full bg-ink-700 px-2 py-0.5 text-[10px] font-medium capitalize text-ink-300">
-                        {offer.category}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Start offer button */}
-                  <div className="mt-auto pt-2">
-                    {offer.clickUrl ? (
-                      <a
-                        href={offer.clickUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-500 group-hover:bg-brand-500"
-                      >
-                        Start Offer <ExternalLink className="h-4 w-4" />
-                      </a>
-                    ) : (
-                      <span className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink-700 px-4 py-2.5 text-sm font-medium text-ink-400">
-                        <CheckCircle2 className="h-4 w-4" /> Unavailable
-                      </span>
-                    )}
-                  </div>
-                </div>
+                <OfferCard key={offer.id} offer={offer} userId={user.id} />
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Recent offer rewards */}
       <div className="rounded-2xl border border-ink-200 bg-ink-900">
         <div className="border-b border-ink-200 px-4 py-3">
           <h2 className="font-semibold text-white">Recent Offer Rewards</h2>
