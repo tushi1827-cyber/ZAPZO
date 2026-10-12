@@ -287,22 +287,31 @@ export function OffersPage() {
                 >
                   {/* Top: icon + reward */}
                   <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-ink-700">
-                      {offer.image ? (
-                        <img
-                          src={offer.image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).style.display =
-                              'none';
-                          }}
-                        />
-                      ) : (
-                        <Gift className="h-6 w-6 text-ink-400" />
-                      )}
+                                      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-ink-700">
+                      <Gift className="absolute h-6 w-6 text-ink-400" />
+                      {(() => {
+                        const imgUrl = offer.image;
+                        if (
+                          imgUrl &&
+                          /^https?:\/\/.+/i.test(imgUrl)
+                        ) {
+                          return (
+                            <img
+                              src={imgUrl}
+                              alt=""
+                              className="relative h-full w-full object-cover"
+                              loading="lazy"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display =
+                                  'none';
+                              }}
+                            />
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
+
                     <div className="flex flex-col items-end">
                       <span className="flex items-center gap-1 text-sm font-bold text-accent-400">
                         <Trophy className="h-4 w-4" />
