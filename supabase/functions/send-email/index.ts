@@ -74,7 +74,7 @@ function escapeAttr(value: string): string {
   return value.replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
-const siteName = "ZAPZO";
+const siteName = "WorkPixo";
 
 interface TemplateContent {
   subject: string;
@@ -159,7 +159,7 @@ function formatAmount(payload: Record<string, unknown>): string | undefined {
 }
 
 const TEMPLATE_CONFIG: Record<TemplateName, { subject: string; ctaLabel: string }> = {
-  welcome: { subject: "Welcome to ZAPZO", ctaLabel: "Explore Tasks" },
+  welcome: { subject: "Welcome to WorkPixo", ctaLabel: "Explore Tasks" },
   withdrawal_requested: { subject: "Withdrawal Request Received", ctaLabel: "View Withdrawal" },
   withdrawal_approved: { subject: "Withdrawal Approved", ctaLabel: "View Wallet" },
   withdrawal_rejected: { subject: "Withdrawal Request Rejected", ctaLabel: "View Wallet" },
@@ -167,9 +167,9 @@ const TEMPLATE_CONFIG: Record<TemplateName, { subject: string; ctaLabel: string 
   gift_card_fulfilled: { subject: "Your Gift Card Is Ready", ctaLabel: "View Gift Card" },
   task_approved: { subject: "Task Approved", ctaLabel: "View Wallet" },
   task_rejected: { subject: "Task Submission Rejected", ctaLabel: "View Tasks" },
-  support_reply: { subject: "New Reply From ZAPZO Support", ctaLabel: "View Support Ticket" },
+  support_reply: { subject: "New Reply From WorkPixo Support", ctaLabel: "View Support Ticket" },
   ticket_status_changed: { subject: "Support Ticket Status Updated", ctaLabel: "View Support Ticket" },
-  account_suspended: { subject: "Your ZAPZO Account Has Been Suspended", ctaLabel: "Contact Support" },
+  account_suspended: { subject: "Your WorkPixo Account Has Been Suspended", ctaLabel: "Contact Support" },
 };
 
 function buildTemplateContent(template: TemplateName, payload: Record<string, unknown>): TemplateContent {
@@ -191,7 +191,7 @@ function buildTemplateContent(template: TemplateName, payload: Record<string, un
   switch (template) {
     case "welcome": {
       inner += greeting(userName);
-      inner += paragraph("Welcome to ZAPZO! Your account is ready to go.");
+      inner += paragraph("Welcome to WorkPixo! Your account is ready to go.");
       inner += paragraph("You can now explore available tasks and start earning. Complete tasks, refer friends, and build your earnings all in one place.");
       if (ctaUrl) inner += ctaButton(ctaUrl, config.ctaLabel);
       break;
@@ -277,7 +277,7 @@ function buildTemplateContent(template: TemplateName, payload: Record<string, un
 
     case "support_reply": {
       inner += greeting(userName);
-      inner += paragraph("You've received a new reply from ZAPZO Support on your ticket.");
+      inner += paragraph("You've received a new reply from WorkPixo Support on your ticket.");
       if (ticketSubject) inner += infoRow("Ticket", ticketSubject);
       if (messagePreview) {
         inner += `<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
@@ -303,7 +303,7 @@ function buildTemplateContent(template: TemplateName, payload: Record<string, un
 
     case "account_suspended": {
       inner += greeting(userName);
-      inner += paragraph("Your ZAPZO account has been suspended.");
+      inner += paragraph("Your WorkPixo account has been suspended.");
       if (reason) {
         inner += infoRow("Reason", reason);
       }
@@ -395,7 +395,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "ZAPZO <noreply@resend.dev>",
+        from: "WorkPixo <noreply@resend.dev>",
         to: [body.to],
         subject: finalSubject,
         html: rendered.html,

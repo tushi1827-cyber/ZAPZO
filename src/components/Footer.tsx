@@ -56,7 +56,7 @@ export function Footer() {
           ))}
         </div>
         <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-ink-200 pt-6 sm:flex-row sm:items-center">
-          <p className="text-xs text-ink-400">© {new Date().getFullYear()} ZAPZO. All rights reserved.</p>
+          <p className="text-xs text-ink-400">© {new Date().getFullYear()} WorkPixo. All rights reserved.</p>
           <p className="text-xs text-ink-400">
             Earnings are not guaranteed. Rewards require verification. Never pay to access ordinary earning tasks.
           </p>

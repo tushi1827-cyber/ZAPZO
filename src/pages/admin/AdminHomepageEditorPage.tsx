@@ -147,7 +147,7 @@ export function AdminHomepageEditorPage() {
   return (
     <AdminPageWrapper
       title="Homepage Editor"
-      subtitle="Edit the content displayed on the ZAPZO homepage. Changes go live immediately after saving."
+      subtitle="Edit the content displayed on the WorkPixo homepage. Changes go live immediately after saving."
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" variant="secondary" onClick={handleCancel} disabled={saving}>

@@ -206,7 +206,7 @@ export function LandingPage() {
                   </div>
                   <div>
                     <p className="text-sm text-ink-400">Your referral code</p>
-                    <p className="text-xl font-bold tracking-wider text-white">ZAPZO-X7K29</p>
+                    <p className="text-xl font-bold tracking-wider text-white">WorkPixo-X7K29</p>
                   </div>
                 </div>
                 <div className="mt-6 space-y-4">

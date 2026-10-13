@@ -7,4 +7,4 @@ Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
 
-Sitemap: https://zapzo.vercel.app/sitemap.xml
+Sitemap: https://workpixo.com/sitemap.xml

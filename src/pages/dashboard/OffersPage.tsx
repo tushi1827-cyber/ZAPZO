@@ -455,7 +455,7 @@ export function OffersPage() {
           Earn with Offers
         </h1>
         <p className="mt-2 text-ink-400">
-          Complete sponsored offers and surveys from our partners to earn ZAPZO
+          Complete sponsored offers and surveys from our partners to earn WorkPixo
           rewards. Rewards are credited automatically to your wallet.
         </p>
       </div>

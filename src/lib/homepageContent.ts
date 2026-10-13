@@ -73,7 +73,7 @@ export const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
   ],
   taskCategoryLabels: ['Social', 'Survey', 'Website', 'App', 'Learning', 'Other'],
   faqs: [
-    { q: 'Is ZAPZO free to join?', a: 'Yes. Creating an account is completely free. You should never pay anyone to access ordinary earning tasks on ZAPZO.' },
+    { q: 'Is WorkPixo free to join?', a: 'Yes. Creating an account is completely free. You should never pay anyone to access ordinary earning tasks on WorkPixo.' },
     { q: 'How do I earn rewards?', a: 'Complete verified tasks, submit proof, and once your submission is approved by our review team, the reward is credited to your wallet.' },
     { q: 'Are earnings guaranteed?', a: 'No. Earnings depend on the availability of tasks and successful verification of your submissions. We never promise guaranteed income.' },
     { q: 'How do referrals work?', a: 'Share your unique referral code. When a referred friend signs up AND completes a qualifying task that gets approved, your referral becomes qualified and you earn a referral reward. Signup alone does not generate a reward.' },
@@ -83,7 +83,7 @@ export const DEFAULT_HOMEPAGE_CONTENT: HomepageContent = {
     { q: 'What is the wallet ledger?', a: 'Every reward, referral bonus, adjustment, and withdrawal is recorded as a transaction in your wallet. You can review your full history at any time for complete transparency.' },
   ],
   finalCtaHeading: 'Ready to start earning?',
-  finalCtaDescription: 'Join ZAPZO today, complete verified tasks, and build your rewards through genuine effort.',
+  finalCtaDescription: 'Join WorkPixo today, complete verified tasks, and build your rewards through genuine effort.',
   footerDescription: '',
 };
 

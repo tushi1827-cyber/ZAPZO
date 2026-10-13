@@ -60,7 +60,7 @@ export function AdminLayout() {
           </div>
           <div>
             <p className="font-extrabold tracking-tight text-white">Admin Panel</p>
-            <p className="text-xs text-ink-400">ZAPZO Management</p>
+            <p className="text-xs text-ink-400">WorkPixo Management</p>
           </div>
         </div>
       </div>

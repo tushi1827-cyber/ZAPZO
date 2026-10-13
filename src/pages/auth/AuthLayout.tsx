@@ -13,7 +13,7 @@ export function AuthLayout({ children, title, subtitle }: { children: ReactNode;
         <div className="relative">
           <Link to="/" className="inline-flex items-center gap-2 text-2xl font-extrabold text-white">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 shadow-glow-purple"><Zap className="h-5 w-5" fill="currentColor" /></span>
-            ZAPZO
+            WorkPixo
           </Link>
         </div>
         <div className="relative">
