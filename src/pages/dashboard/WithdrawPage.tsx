@@ -312,7 +312,7 @@ export function WithdrawPage() {
             {/* Payment Method Selection */}
             <div className="mt-5">
               <label className="label">Select Payment Method</label>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-3 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3">
                 {PAYMENT_METHODS.map((opt) => {
                   const selected = method === opt.value;
                   return (
@@ -321,7 +321,7 @@ export function WithdrawPage() {
                       type="button"
                       onClick={() => handleMethodChange(opt.value)}
                       disabled={hasPending}
-                      className={`group relative flex flex-col items-start gap-3 overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 ${
+                      className={`group relative flex min-w-0 flex-col items-start gap-2 overflow-hidden rounded-2xl border p-3 text-left transition-all duration-200 sm:gap-3 sm:p-4 ${
                         selected
                           ? 'border-brand-500 bg-gradient-to-br from-brand-600/15 to-brand-900/10 ring-1 ring-brand-500/40 shadow-glow-purple'
                           : 'border-ink-200 bg-ink-800/30 hover:border-brand-500/40 hover:bg-ink-800/50'
@@ -335,18 +335,17 @@ export function WithdrawPage() {
                       <div
                         role="img"
                         aria-label={`${opt.label} payment method visual`}
-                        className="w-full overflow-hidden rounded-xl bg-ink-950/60"
+                        className="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-ink-950/60 sm:h-28 lg:h-24"
                         style={{
-                          aspectRatio: '3 / 5',
                           backgroundImage: 'url(/image.png)',
                           backgroundPosition: opt.visualPosition,
                           backgroundRepeat: 'no-repeat',
                           backgroundSize: '500% 100%',
                         }}
                       />
-                      <div>
+                      <div className="min-w-0">
                         <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
-                        <p className="mt-0.5 text-xs text-ink-400">{opt.description}</p>
+                        <p className="mt-0.5 text-xs leading-5 text-ink-400">{opt.description}</p>
                       </div>
                       {opt.isGiftCard && (
                         <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-400">
