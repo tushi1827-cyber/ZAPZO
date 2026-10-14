@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { Zap, ShieldCheck, BadgeCheck, Wallet } from 'lucide-react';
+import { ShieldCheck, BadgeCheck, Wallet } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 
 export function AuthLayout({ children, title, subtitle }: { children: ReactNode; title: string; subtitle: string }) {
@@ -11,9 +11,8 @@ export function AuthLayout({ children, title, subtitle }: { children: ReactNode;
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-10 left-10 h-48 w-48 rounded-full bg-accent-400/5 blur-3xl" />
         <div className="relative">
-          <Link to="/" className="inline-flex items-center gap-2 text-2xl font-extrabold text-white">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 shadow-glow-purple"><Zap className="h-5 w-5" fill="currentColor" /></span>
-            WorkPixo
+          <Link to="/" className="inline-flex items-center">
+            <img src="/workpixo-logo.png" alt="WorkPixo" className="h-9 w-auto object-contain" />
           </Link>
         </div>
         <div className="relative">
