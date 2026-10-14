@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import { ShieldCheck, BadgeCheck, Wallet } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 
@@ -11,9 +10,7 @@ export function AuthLayout({ children, title, subtitle }: { children: ReactNode;
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl animate-glow-pulse" />
         <div className="absolute bottom-10 left-10 h-48 w-48 rounded-full bg-accent-400/5 blur-3xl" />
         <div className="relative">
-          <Link to="/" className="inline-flex items-center">
-            <img src="/workpixo-logo.png" alt="WorkPixo" className="h-9 w-auto object-contain" />
-          </Link>
+          <Logo size="lg" />
         </div>
         <div className="relative">
           <h2 className="text-3xl font-bold text-white">Do Tasks. <span className="text-accent-400">Earn Rewards.</span></h2>
