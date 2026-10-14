@@ -21,7 +21,9 @@ export type WalletTxType =
   | 'bonus'
   | 'adjustment'
   | 'withdrawal'
-  | 'withdrawal_reversal';
+  | 'withdrawal_reversal'
+  | 'offerwall_reward'
+  | 'offerwall_reversal';
 export type WalletTxStatus = 'pending' | 'completed' | 'reversed';
 export type WithdrawalMethod =
   | 'upi'

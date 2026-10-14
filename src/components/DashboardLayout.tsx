@@ -21,6 +21,7 @@ import { Notification } from '@/types';
 const navItems = [
   { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { to: '/dashboard/tasks', label: 'Browse Tasks', icon: ClipboardList },
+  { to: '/dashboard/offers', label: 'Earn with Offers', icon: Sparkles },
   { to: '/dashboard/submissions', label: 'My Submissions', icon: FileCheck },
   { to: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
