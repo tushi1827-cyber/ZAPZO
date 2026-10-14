@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  Shield, Users, ClipboardList, FileCheck, ArrowDownToLine, Share2,
+  Users, ClipboardList, FileCheck, ArrowDownToLine, Share2,
   Wallet, Settings as SettingsIcon, LayoutDashboard, Menu, X, LogOut, ScrollText,
   ShieldAlert, Headset, LayoutTemplate, Mail, MessageSquare, KeyRound,
 } from 'lucide-react';
@@ -54,15 +54,8 @@ export function AdminLayout() {
   const NavContent = () => (
     <div className="flex h-full flex-col">
       <div className="px-4 py-5">
-        <div className="flex items-center gap-2">
-          <div className="grid h-8 w-8 place-items-center rounded-xl bg-brand-600 text-white shadow-glow-purple">
-            <Shield className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="font-extrabold tracking-tight text-white">Admin Panel</p>
-            <p className="text-xs text-ink-400">WorkPixo Management</p>
-          </div>
-        </div>
+        <Logo size="sm" />
+        <p className="mt-2 text-xs text-ink-400">Admin Panel</p>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         {visibleItems.map((item) => {
