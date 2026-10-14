@@ -343,15 +343,6 @@ export function WithdrawPage() {
                           backgroundSize: '500% 100%',
                         }}
                       />
-                      <div className="min-w-0">
-                        <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
-                        <p className="mt-0.5 text-xs leading-5 text-ink-400">{opt.description}</p>
-                      </div>
-                      {opt.isGiftCard && (
-                        <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-400">
-                          <Gift className="h-2.5 w-2.5" /> Gift Card
-                        </span>
-                      )}
                     </button>
                   );
                 })}
