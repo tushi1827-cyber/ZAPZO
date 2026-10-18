@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowDownToLine, XCircle, Clock, Banknote, Eye,
+  ArrowDownToLine, XCircle, Clock, Banknote, Eye, CheckCircle2,
   Smartphone, Building2, Gift, Mail,
 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
@@ -108,10 +108,16 @@ export function AdminWithdrawalsPage() {
     });
     setActionLoading(false);
     if (rpcErr) {
-      setError(rpcErr.message);
+      let msg = rpcErr.message;
+      if (msg.includes('Invalid state transition')) msg = 'This action is not allowed for the current withdrawal status.';
+      else if (msg.includes('terminal state')) msg = 'This withdrawal is already finalized and cannot be reviewed again.';
+      else if (msg.includes('Admin access required')) msg = 'You do not have admin access to perform this action.';
+      else if (msg.includes('Authentication required')) msg = 'You must be signed in to review withdrawals.';
+      else if (msg.includes('not found')) msg = 'This withdrawal could not be found.';
+      setError(msg);
       return;
     }
-    setSuccess(`Withdrawal ${status === 'paid' ? 'marked as paid' : status === 'rejected' ? 'rejected and funds released' : 'updated to ' + status}.`);
+    setSuccess(`Withdrawal ${status === 'paid' ? 'marked as paid' : status === 'rejected' ? 'rejected and funds released' : status === 'approved' ? 'approved — ready for payment' : 'updated to ' + status}.`);
     setSelected(null);
     setRejectReason('');
     await load();
@@ -260,16 +266,32 @@ export function AdminWithdrawalsPage() {
               </div>
             )}
 
+            {/* Status flow indicator */}
+            <div className="flex items-center gap-1 rounded-xl bg-ink-800/50 p-3">
+              {(['pending', 'processing', 'approved', 'paid'] as const).map((step, i) => {
+                const isCurrent = selected.status === step;
+                const isPast = ['rejected', 'paid'].includes(selected.status) && step === selected.status;
+                const stepClass = isCurrent
+                  ? 'bg-brand-600 text-white'
+                  : isPast
+                    ? 'bg-ink-700 text-ink-300'
+                    : 'text-ink-500';
+                return (
+                  <span key={step} className="flex items-center gap-1">
+                    <span className={`rounded px-2 py-0.5 text-xs font-medium capitalize ${stepClass}`}>
+                      {step}
+                    </span>
+                    {i < 3 && <span className="text-ink-600">&rarr;</span>}
+                  </span>
+                );
+              })}
+              {selected.status === 'rejected' && (
+                <span className="ml-1 rounded bg-danger-500/20 px-2 py-0.5 text-xs font-medium text-danger-400">rejected</span>
+              )}
+            </div>
+
             {!['rejected', 'paid'].includes(selected.status) && (
               <>
-                <Textarea
-                  label="Rejection reason (only needed for rejection)"
-                  name="reject_reason"
-                  placeholder="Explain why this withdrawal is being rejected..."
-                  value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
-                  rows={2}
-                />
                 {error && <div className="rounded-xl bg-danger-500/10 p-3 text-sm text-danger-400">{error}</div>}
                 <div className="flex flex-wrap justify-end gap-2">
                   {selected.status === 'pending' && (
@@ -277,15 +299,38 @@ export function AdminWithdrawalsPage() {
                       <Clock className="h-4 w-4" /> Mark Processing
                     </Button>
                   )}
-                  <Button variant="danger" size="sm" onClick={() => handleReview('rejected')} disabled={actionLoading}>
-                    {actionLoading ? <Spinner size="sm" /> : <><XCircle className="h-4 w-4" /> Reject</>}
-                  </Button>
-                  <Button size="sm" onClick={() => handleReview('paid')} disabled={actionLoading}>
-                    {actionLoading ? <Spinner size="sm" /> : <><Banknote className="h-4 w-4" /> {isGiftCardMethod(selected.method) ? 'Mark Fulfilled' : 'Mark Paid'}</>}
-                  </Button>
+                  {(selected.status === 'pending' || selected.status === 'processing') && (
+                    <Button variant="accent" size="sm" onClick={() => handleReview('approved')} disabled={actionLoading}>
+                      {actionLoading ? <Spinner size="sm" /> : <><CheckCircle2 className="h-4 w-4" /> Approve</>}
+                    </Button>
+                  )}
+                  {(selected.status === 'pending' || selected.status === 'processing') && (
+                    <>
+                      <Textarea
+                        label="Rejection reason"
+                        name="reject_reason"
+                        placeholder="Explain why this withdrawal is being rejected..."
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        rows={2}
+                      />
+                      <Button variant="danger" size="sm" onClick={() => handleReview('rejected')} disabled={actionLoading}>
+                        {actionLoading ? <Spinner size="sm" /> : <><XCircle className="h-4 w-4" /> Reject</>}
+                      </Button>
+                    </>
+                  )}
+                  {selected.status === 'approved' && (
+                    <Button size="sm" onClick={() => handleReview('paid')} disabled={actionLoading}>
+                      {actionLoading ? <Spinner size="sm" /> : <><Banknote className="h-4 w-4" /> {isGiftCardMethod(selected.method) ? 'Mark Fulfilled' : 'Mark Paid'}</>}
+                    </Button>
+                  )}
                 </div>
                 <p className="text-xs text-ink-400">
-                  Rejecting releases reserved funds back to the user's wallet. {isGiftCardMethod(selected.method) ? 'Marking fulfilled confirms the gift card has been sent.' : 'Marking paid finalizes the withdrawal.'}
+                  {selected.status === 'approved'
+                    ? isGiftCardMethod(selected.method)
+                      ? 'Confirm that the gift card has been purchased and sent to the user.'
+                      : 'Confirm that the payment has been sent to the user.'
+                    : 'Rejecting releases reserved funds back to the user\'s wallet. Approving moves to the next stage for payment.'}
                 </p>
               </>
             )}
