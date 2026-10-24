@@ -29,20 +29,20 @@ function PolicyList({ items }: { items: React.ReactNode[] }) {
 
 export function TermsPage() {
   return (
-    <LegalLayout title="Terms & Conditions" description="Read the Terms & Conditions for using ZAPZO, including eligibility, tasks, rewards, withdrawals, referrals, and prohibited activities." lastUpdated={LAST_UPDATED}>
+    <LegalLayout title="Terms & Conditions" description="Read the Terms & Conditions for using WorkPixo, including eligibility, tasks, rewards, withdrawals, referrals, and prohibited activities." lastUpdated={LAST_UPDATED}>
       <div className="rounded-xl bg-gradient-to-br from-brand-600/10 to-brand-900/5 p-5 border border-brand-600/20">
         <p className="text-sm text-ink-400">
-          These Terms & Conditions govern your use of ZAPZO, a task-and-referral rewards platform. By creating an account or using the platform, you agree to these terms. If you do not agree, please do not use the platform.
+          These Terms & Conditions govern your use of WorkPixo, a task-and-referral rewards platform. By creating an account or using the platform, you agree to these terms. If you do not agree, please do not use the platform.
         </p>
       </div>
 
       <PolicySection number="1" title="Introduction">
-        <p>ZAPZO is a platform where users can complete tasks, submit proof of completion, and earn rewards upon verification. Users may also refer others and earn referral rewards when those referrals complete qualifying actions.</p>
-        <p>ZAPZO is not a gambling, betting, investment, or deposit-to-earn platform. We do not guarantee any specific earnings. Registration alone does not generate money. You should never pay money to access ordinary earning tasks on the platform.</p>
+        <p>WorkPixo is a platform where users can complete tasks, submit proof of completion, and earn rewards upon verification. Users may also refer others and earn referral rewards when those referrals complete qualifying actions.</p>
+        <p>WorkPixo is not a gambling, betting, investment, or deposit-to-earn platform. We do not guarantee any specific earnings. Registration alone does not generate money. You should never pay money to access ordinary earning tasks on the platform.</p>
       </PolicySection>
 
       <PolicySection number="2" title="Eligibility">
-        <p>You must meet the following requirements to use ZAPZO:</p>
+        <p>You must meet the following requirements to use WorkPixo:</p>
         <PolicyList items={[
           <span>You must be of legal age in your jurisdiction to enter into binding agreements.</span>,
           <span>You must provide accurate and truthful information during registration and throughout your use of the platform.</span>,
@@ -52,7 +52,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="3" title="Account Registration">
-        <p>To use ZAPZO, you must register an account using a valid email address. You agree to:</p>
+        <p>To use WorkPixo, you must register an account using a valid email address. You agree to:</p>
         <PolicyList items={[
           <span>Provide accurate, current, and complete information during registration.</span>,
           <span>Keep your account credentials confidential and not share them with others.</span>,
@@ -62,7 +62,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="4" title="User Responsibilities">
-        <p>As a user of ZAPZO, you are responsible for:</p>
+        <p>As a user of WorkPixo, you are responsible for:</p>
         <PolicyList items={[
           <span>Completing tasks genuinely and submitting accurate proof of completion.</span>,
           <span>Following the specific instructions provided for each task.</span>,
@@ -74,7 +74,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="5" title="Tasks and Submissions">
-        <p>Tasks on ZAPZO may include various activities such as social media engagement, content creation, surveys, or other actions specified by the platform. The following rules apply:</p>
+        <p>Tasks on WorkPixo may include various activities such as social media engagement, content creation, surveys, or other actions specified by the platform. The following rules apply:</p>
         <PolicyList items={[
           <span>Task availability may change at any time. Tasks may be added, paused, or completed without prior notice.</span>,
           <span>You must complete tasks honestly and provide genuine proof of completion.</span>,
@@ -101,7 +101,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="7" title="Rewards and Wallet Balance">
-        <p>Rewards are credited to your ZAPZO wallet only after your task submission is approved. The following applies:</p>
+        <p>Rewards are credited to your WorkPixo wallet only after your task submission is approved. The following applies:</p>
         <PolicyList items={[
           <span>Rewards are not guaranteed and depend on task availability and successful verification.</span>,
           <span>Your wallet balance reflects approved rewards and may be affected by pending withdrawals.</span>,
@@ -123,7 +123,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="9" title="Referral Program">
-        <p>ZAPZO offers a referral program that rewards users for inviting others to the platform. The following rules apply:</p>
+        <p>WorkPixo offers a referral program that rewards users for inviting others to the platform. The following rules apply:</p>
         <PolicyList items={[
           <span>Referral rewards are credited only when a referred user completes a qualifying task that is approved by the platform.</span>,
           <span>Signup alone does not generate a referral reward.</span>,
@@ -134,7 +134,7 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="10" title="Prohibited Activities">
-        <p>The following activities are strictly prohibited on ZAPZO:</p>
+        <p>The following activities are strictly prohibited on WorkPixo:</p>
         <PolicyList items={[
           <span>Creating multiple accounts or using false identities.</span>,
           <span>Submitting fraudulent, fake, or plagiarized proof.</span>,
@@ -159,12 +159,12 @@ export function TermsPage() {
       </PolicySection>
 
       <PolicySection number="12" title="Platform Changes">
-        <p>ZAPZO may modify, update, or discontinue features, tasks, reward structures, withdrawal methods, or any aspect of the platform at any time without prior notice. The platform is not liable for any loss of earnings due to such changes.</p>
+        <p>WorkPixo may modify, update, or discontinue features, tasks, reward structures, withdrawal methods, or any aspect of the platform at any time without prior notice. The platform is not liable for any loss of earnings due to such changes.</p>
         <p>We may also update these Terms & Conditions from time to time. Continued use of the platform after changes constitutes acceptance of the updated terms.</p>
       </PolicySection>
 
       <PolicySection number="13" title="Disclaimer">
-        <p>ZAPZO is provided on an "as is" and "as available" basis. We do not guarantee that:</p>
+        <p>WorkPixo is provided on an "as is" and "as available" basis. We do not guarantee that:</p>
         <PolicyList items={[
           <span>Tasks will always be available.</span>,
           <span>Submissions will always be approved.</span>,
@@ -172,11 +172,11 @@ export function TermsPage() {
           <span>Withdrawals will be processed within a specific timeframe.</span>,
           <span>The platform will be uninterrupted or error-free.</span>,
         ]} />
-        <p>Earnings on ZAPZO depend on task availability, successful verification, and adherence to platform rules. We do not make any guarantees regarding income or rewards.</p>
+        <p>Earnings on WorkPixo depend on task availability, successful verification, and adherence to platform rules. We do not make any guarantees regarding income or rewards.</p>
       </PolicySection>
 
       <PolicySection number="14" title="Limitation of Liability">
-        <p>To the maximum extent permitted by law, ZAPZO shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of earnings, data, or goodwill, arising from your use of or inability to use the platform.</p>
+        <p>To the maximum extent permitted by law, WorkPixo shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of earnings, data, or goodwill, arising from your use of or inability to use the platform.</p>
         <p>The platform is not responsible for losses due to task unavailability, verification rejections, platform downtime, or withdrawal processing delays.</p>
       </PolicySection>
 
@@ -194,10 +194,10 @@ export function TermsPage() {
 
 export function PrivacyPage() {
   return (
-    <LegalLayout title="Privacy Policy" description="Learn how ZAPZO collects, uses, and protects your personal information, including account data, task submissions, wallet details, and support communications." lastUpdated={LAST_UPDATED}>
+    <LegalLayout title="Privacy Policy" description="Learn how WorkPixo collects, uses, and protects your personal information, including account data, task submissions, wallet details, and support communications." lastUpdated={LAST_UPDATED}>
       <div className="rounded-xl bg-gradient-to-br from-brand-600/10 to-brand-900/5 p-5 border border-brand-600/20">
         <p className="text-sm text-ink-400">
-          This Privacy Policy explains how ZAPZO collects, uses, and protects your information when you use our task-and-referral rewards platform. By using ZAPZO, you consent to the practices described in this policy.
+          This Privacy Policy explains how WorkPixo collects, uses, and protects your information when you use our task-and-referral rewards platform. By using WorkPixo, you consent to the practices described in this policy.
         </p>
       </div>
 
@@ -213,7 +213,7 @@ export function PrivacyPage() {
       </PolicySection>
 
       <PolicySection number="2" title="Account Information">
-        <p>When you register on ZAPZO, we collect:</p>
+        <p>When you register on WorkPixo, we collect:</p>
         <PolicyList items={[
           <span>Your name and email address.</span>,
           <span>A referral code if you were referred by another user.</span>,
@@ -292,7 +292,7 @@ export function PrivacyPage() {
       </PolicySection>
 
       <PolicySection number="9" title="Service Providers">
-        <p>ZAPZO uses third-party service providers to deliver platform functionality, including:</p>
+        <p>WorkPixo uses third-party service providers to deliver platform functionality, including:</p>
         <PolicyList items={[
           <span>Database and authentication infrastructure.</span>,
           <span>Email delivery services for notifications.</span>,
@@ -322,7 +322,7 @@ export function PrivacyPage() {
       </PolicySection>
 
       <PolicySection number="12" title="Cookies / Local Storage">
-        <p>ZAPZO uses local storage and similar technologies to:</p>
+        <p>WorkPixo uses local storage and similar technologies to:</p>
         <PolicyList items={[
           <span>Maintain your authentication session.</span>,
           <span>Store user preferences such as theme settings.</span>,
@@ -332,7 +332,7 @@ export function PrivacyPage() {
       </PolicySection>
 
       <PolicySection number="13" title="Children's Privacy">
-        <p>ZAPZO is not intended for use by individuals under the legal age in their jurisdiction. We do not knowingly collect information from minors. If you believe a minor has registered an account, please contact support so we can take appropriate action.</p>
+        <p>WorkPixo is not intended for use by individuals under the legal age in their jurisdiction. We do not knowingly collect information from minors. If you believe a minor has registered an account, please contact support so we can take appropriate action.</p>
       </PolicySection>
 
       <PolicySection number="14" title="Policy Changes">
@@ -353,17 +353,17 @@ export function PrivacyPage() {
 
 export function WithdrawalPolicyPage() {
   return (
-    <LegalLayout title="Withdrawal Policy" description="ZAPZO's Withdrawal Policy explains eligibility, available methods, processing, rejection reasons, gift cards, and important payment detail guidelines." lastUpdated={LAST_UPDATED}>
+    <LegalLayout title="Withdrawal Policy" description="WorkPixo's Withdrawal Policy explains eligibility, available methods, processing, rejection reasons, gift cards, and important payment detail guidelines." lastUpdated={LAST_UPDATED}>
       <div className="rounded-xl bg-gradient-to-br from-brand-600/10 to-brand-900/5 p-5 border border-brand-600/20">
         <p className="text-sm text-ink-400">
-          This Withdrawal Policy explains how withdrawals work on ZAPZO, including eligibility, available methods, processing, and important information about payout details. Withdrawals are processed through manual admin review and are not guaranteed to be instant.
+          This Withdrawal Policy explains how withdrawals work on WorkPixo, including eligibility, available methods, processing, and important information about payout details. Withdrawals are processed through manual admin review and are not guaranteed to be instant.
         </p>
       </div>
 
       <PolicySection number="1" title="Withdrawal Eligibility">
-        <p>To request a withdrawal on ZAPZO, the following conditions must be met:</p>
+        <p>To request a withdrawal on WorkPixo, the following conditions must be met:</p>
         <PolicyList items={[
-          <span>You must have an active ZAPZO account in good standing.</span>,
+          <span>You must have an active WorkPixo account in good standing.</span>,
           <span>Your available wallet balance must meet the platform's minimum withdrawal threshold.</span>,
           <span>Your account must not be suspended or flagged for review.</span>,
           <span>You must not have a pending or processing withdrawal request. Only one withdrawal request may be active at a time.</span>,
@@ -377,7 +377,7 @@ export function WithdrawalPolicyPage() {
       </PolicySection>
 
       <PolicySection number="3" title="Available Withdrawal Methods">
-        <p>ZAPZO supports the following withdrawal methods:</p>
+        <p>WorkPixo supports the following withdrawal methods:</p>
         <PolicyList items={[
           <span><strong className="text-ink-50">UPI:</strong> Transfer to a valid UPI ID.</span>,
           <span><strong className="text-ink-50">Bank Transfer:</strong> Direct deposit to your bank account (requires account holder name, account number, IFSC code, and bank name).</span>,
@@ -484,11 +484,11 @@ export function ResponsibleEarningPage() {
   return (
     <LegalLayout title="Responsible Earning" lastUpdated={LAST_UPDATED}>
       <div className="rounded-xl bg-brand-600/10 p-5">
-        <p className="font-semibold text-brand-400">ZAPZO is committed to transparency and responsible earning. Please read this page carefully before participating.</p>
+        <p className="font-semibold text-brand-400">WorkPixo is committed to transparency and responsible earning. Please read this page carefully before participating.</p>
       </div>
 
       <h2 className="text-xl font-bold text-white">Core Principles</h2>
-      <p>ZAPZO is a legitimate platform where users earn rewards by completing genuine tasks. We do not operate a gambling, betting, investment, or deposit-to-earn system.</p>
+      <p>WorkPixo is a legitimate platform where users earn rewards by completing genuine tasks. We do not operate a gambling, betting, investment, or deposit-to-earn system.</p>
 
       <h2 className="text-xl font-bold text-white">What You Should Know</h2>
       <ul className="list-disc pl-5 space-y-2">
@@ -496,7 +496,7 @@ export function ResponsibleEarningPage() {
         <li><strong>Task availability can change.</strong> Tasks may be added, paused, or completed at any time without prior notice.</li>
         <li><strong>Rewards require verification.</strong> All task submissions are manually reviewed by our admin team before rewards are credited.</li>
         <li><strong>Fraudulent activity may result in reward reversal.</strong> Submitting fake proof, creating multiple accounts, or abusing the referral system will lead to reward reversal and potential account suspension.</li>
-        <li><strong>Never pay to earn.</strong> You should never pay money to anyone to access ordinary earning tasks on ZAPZO. If someone asks you for payment, report them to support immediately.</li>
+        <li><strong>Never pay to earn.</strong> You should never pay money to anyone to access ordinary earning tasks on WorkPixo. If someone asks you for payment, report them to support immediately.</li>
       </ul>
 
       <h2 className="text-xl font-bold text-white">Referral Program Ethics</h2>
@@ -521,12 +521,12 @@ export function ContactPage() {
         <Card className="p-5">
           <h3 className="font-bold text-white">General Support</h3>
           <p className="mt-2 text-sm text-ink-400">For account issues, task questions, or referral problems.</p>
-          <p className="mt-3 text-sm font-medium text-brand-400">support@zapzo.example</p>
+          <p className="mt-3 text-sm font-medium text-brand-400">support@workpixo.example</p>
         </Card>
         <Card className="p-5">
           <h3 className="font-bold text-white">Report Fraud</h3>
           <p className="mt-2 text-sm text-ink-400">Report suspicious activity or payment-for-task scams.</p>
-          <p className="mt-3 text-sm font-medium text-danger-400">fraud@zapzo.example</p>
+          <p className="mt-3 text-sm font-medium text-danger-400">fraud@workpixo.example</p>
         </Card>
       </div>
       <div className="mt-6 rounded-xl bg-ink-800/50 p-5">
@@ -566,14 +566,14 @@ export function SupportPage() {
 
 export function AboutPage() {
   return (
-    <LegalLayout title="About ZAPZO">
+    <LegalLayout title="About WorkPixo">
       <div className="rounded-xl bg-gradient-to-br from-brand-600 to-brand-800 p-6 text-white shadow-glow-purple">
         <h2 className="text-2xl font-bold">Do Tasks. Earn Rewards.</h2>
-        <p className="mt-2 text-white/70">ZAPZO is a legitimate task-and-referral rewards platform built on transparency and trust.</p>
+        <p className="mt-2 text-white/70">WorkPixo is a legitimate task-and-referral rewards platform built on transparency and trust.</p>
       </div>
 
       <h2 className="text-xl font-bold text-white">Our Mission</h2>
-      <p>We believe earning rewards should be simple, transparent, and fair. ZAPZO connects users with verified tasks and pays rewards only after genuine completion — no deposits, no promises, no tricks.</p>
+      <p>We believe earning rewards should be simple, transparent, and fair. WorkPixo connects users with verified tasks and pays rewards only after genuine completion — no deposits, no promises, no tricks.</p>
 
       <h2 className="text-xl font-bold text-white">How It Works</h2>
       <p>Users create accounts, browse available tasks, complete them, and submit proof. Our admin team reviews each submission. Approved tasks credit rewards directly to the user's wallet. Users can also refer friends and earn referral rewards when those friends complete qualifying tasks.</p>

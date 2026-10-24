@@ -9,7 +9,7 @@ export function Logo({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
       <span className={`${dims} grid place-items-center rounded-xl bg-brand-600 text-white shadow-glow-purple transition-transform hover:scale-105`}>
         <Zap className="h-1/2 w-1/2" fill="currentColor" />
       </span>
-      <span className={`${text} text-white`}>ZAPZO</span>
+      <span className={`${text} text-white`}>WorkPixo</span>
     </Link>
   );
 }

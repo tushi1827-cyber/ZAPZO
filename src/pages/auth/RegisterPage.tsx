@@ -66,7 +66,7 @@ export function RegisterPage() {
   };
 
   return (
-    <AuthLayout title="Create your account" subtitle="Join ZAPZO free — start completing verified tasks and earning rewards.">
+    <AuthLayout title="Create your account" subtitle="Join WorkPixo free — start completing verified tasks and earning rewards.">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           label="Full Name"
@@ -101,7 +101,7 @@ export function RegisterPage() {
           <Input
             label="Referral Code (optional)"
             name="referral_code"
-            placeholder="ZAPZO-XXXXX"
+            placeholder="WorkPixo-XXXXX"
             value={referralCode}
             onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
             hint={refValid === true ? 'Valid referral code!' : refValid === false ? 'Code not found — you can still sign up without it.' : 'Enter a friend\'s code to be linked as their referral.'}

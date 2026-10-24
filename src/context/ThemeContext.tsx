@@ -11,7 +11,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('zapzo-theme') as Theme | null;
+    const stored = localStorage.getItem('workpixo-theme') as Theme | null;
     if (stored) return stored;
     return 'dark';
   });
@@ -19,7 +19,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add('dark');
-    localStorage.setItem('zapzo-theme', 'dark');
+    localStorage.setItem('workpixo-theme', 'dark');
   }, []);
 
   const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));

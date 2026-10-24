@@ -11,15 +11,15 @@ interface LegalLayoutProps {
 
 export function LegalLayout({ title, description, lastUpdated, children }: LegalLayoutProps) {
   useEffect(() => {
-    document.title = `${title} — ZAPZO`;
+    document.title = `${title} — WorkPixo`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute('content', description || `${title} for the ZAPZO task-and-referral rewards platform.`);
+      metaDesc.setAttribute('content', description || `${title} for the WorkPixo task-and-referral rewards platform.`);
     }
     return () => {
-      document.title = 'ZAPZO — Do Tasks. Earn Rewards.';
+      document.title = 'WorkPixo — Do Tasks. Earn Rewards.';
       if (metaDesc) {
-        metaDesc.setAttribute('content', 'Complete verified tasks, earn rewards, and grow through qualified referrals on ZAPZO.');
+        metaDesc.setAttribute('content', 'Complete verified tasks, earn rewards, and grow through qualified referrals on WorkPixo.');
       }
     };
   }, [title, description]);

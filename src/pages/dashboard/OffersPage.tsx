@@ -59,7 +59,7 @@ export function OffersPage() {
             Earn with Offers
           </h1>
           <p className="mt-2 text-ink-400">
-            Complete sponsored offers and surveys to earn ZAPZO rewards.
+            Complete sponsored offers and surveys to earn WorkPixo rewards.
           </p>
         </div>
         <div className="flex flex-col items-center justify-center rounded-2xl border border-warning-500/30 bg-warning-500/10 px-6 py-16 text-center">
@@ -86,7 +86,7 @@ export function OffersPage() {
           Earn with Offers
         </h1>
         <p className="mt-2 text-ink-400">
-          Complete sponsored offers and surveys from our partners to earn ZAPZO rewards. Rewards are credited automatically to your wallet.
+          Complete sponsored offers and surveys from our partners to earn WorkPixo rewards. Rewards are credited automatically to your wallet.
         </p>
       </div>
 

@@ -31,7 +31,7 @@ export function LoginPage() {
   };
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to your ZAPZO account to continue earning.">
+    <AuthLayout title="Welcome back" subtitle="Sign in to your WorkPixo account to continue earning.">
       <form onSubmit={handleSubmit} className="space-y-4">
         {justRegistered && (
           <div className="flex items-center gap-2 rounded-xl bg-accent-400/10 p-3 text-sm text-accent-400">
