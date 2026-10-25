@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Wallet, TrendingUp, TrendingDown, ArrowDownToLine, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -8,12 +8,6 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction } from '@/types';
 import { formatCoins, formatInr } from '@/lib/currency';
-
-const formatCoinsWithInr = (n: number) => {
-  const coins = formatCoins(Math.abs(Number(n)));
-  const inr = formatInr(Math.abs(Number(n)));
-  return Number(n) >= 0 ? `+${coins} · +${inr}` : `-${coins} · -${inr}`;
-};
 
 const formatMoney = (n: number) => formatInr(n);
 
@@ -88,7 +82,7 @@ export function WalletPage() {
         <Card accent className="bg-gradient-to-br from-brand-600/20 via-ink-900 to-ink-900 p-6 shadow-glow-purple">
           <Wallet className="h-6 w-6 text-brand-400" />
           <p className="mt-3 text-sm text-ink-400">Available Balance</p>
-          <p className="mt-1 text-3xl font-bold text-white">{formatCoins(balance)}</p><p className="mt-1 text-xs text-ink-500">{formatInr(balance)} · 10 Coins = ₹1</p>
+          <p className="mt-1 text-3xl font-bold text-white">{formatCoins(balance)}</p><p className="mt-1 text-xs text-ink-500">{formatInr(balance)} Â· 10 Coins = â‚¹1</p>
         </Card>
         <Card className="p-5">
           <div className="flex items-center gap-2">
@@ -165,7 +159,7 @@ export function WalletPage() {
                   </div>
                   <div className="text-right">
                     <p className={`text-sm font-bold ${positive ? 'text-accent-400' : 'text-danger-400'}`}>
-                      {formatCoinsWithInr(tx.amount)}
+                      {Number(tx.amount) >= 0 ? '+' : '-'}{formatCoins(Math.abs(Number(tx.amount)))}
                     </p>
                     <span className="text-xs capitalize text-ink-400">{tx.status === 'completed' ? 'Success' : tx.status === 'paid' ? 'Success' : tx.status}</span>
                   </div>
@@ -178,3 +172,4 @@ export function WalletPage() {
     </div>
   );
 }
+
