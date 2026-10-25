@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Referral } from '@/types';
+import { formatCoins, formatInr } from '@/lib/currency';
 
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -68,7 +69,7 @@ export function ReferralsPage() {
   const statCards = [
     { label: 'Total Referrals', value: stats.total, icon: Users, tone: 'bg-brand-600/15 text-brand-400' },
     { label: 'Qualified Referrals', value: stats.qualified, icon: CheckCircle2, tone: 'bg-brand-600/15 text-brand-400' },
-    { label: 'Referral Earnings', value: formatMoney(stats.earnings), icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Referral Earnings', value: `${formatCoins(Number(stats.earnings))} · ${formatInr(Number(stats.earnings))}`, icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
   ];
 
   return (
@@ -158,7 +159,7 @@ export function ReferralsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {ref.status === 'qualified' && <span className="text-sm font-bold text-accent-400">{formatMoney(ref.reward_amount)}</span>}
+                  {ref.status === 'qualified' && <span className="text-sm font-bold text-accent-400">{formatCoins(Number(ref.reward_amount))} · {formatInr(Number(ref.reward_amount))}</span>}
                   <StatusBadge status={ref.status} />
                 </div>
               </div>

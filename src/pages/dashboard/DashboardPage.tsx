@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction, TaskSubmission, Referral } from '@/types';
+import { formatCoins } from '@/lib/currency';
 
 const formatMoney = (n: number) =>
   `₹${Number(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -51,7 +52,7 @@ export function DashboardPage() {
   if (loading && !stats) return <Spinner size="lg" className="py-20" />;
 
   const statCards = [
-    { label: 'Available Balance', value: stats ? formatMoney(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
+    { label: 'Available Balance', value: stats ? formatCoins(stats.availableBalance) : —, icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
     { label: 'Pending Rewards', value: stats ? formatMoney(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
     { label: 'Total Earned', value: stats ? formatMoney(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
     { label: 'Referral Earnings', value: stats ? formatMoney(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
@@ -97,7 +98,7 @@ export function DashboardPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm text-ink-400">{card.label}</p>
-                <p className="mt-1 text-2xl font-bold text-white">{card.value}</p>
+                <p className="mt-1 text-2xl font-bold text-white">{card.value}</p>{card.label === 'Available Balance' && stats && <p className="mt-1 text-xs text-ink-500">{formatMoney(stats.availableBalance)} • 10 Coins = {String.fromCharCode(8377)}1</p>}
               </div>
               <div className={`grid h-10 w-10 place-items-center rounded-xl ${card.tone}`}>
                 <card.icon className="h-5 w-5" />

@@ -13,6 +13,7 @@ import { Badge, StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Task, TaskSubmission } from '@/types';
+import { formatCoins, formatInr } from '@/lib/currency';
 import { Zap } from 'lucide-react';
 
 const formatMoney = (n: number) =>
@@ -260,7 +261,7 @@ export function TaskDetailPage() {
             <h1 className="text-2xl font-bold text-white">{task.title}</h1>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-2xl font-bold text-accent-400">{formatMoney(task.reward)}</p>
+            <p className="text-2xl font-bold text-accent-400">{formatCoins(Number(task.reward))} · {formatInr(Number(task.reward))}</p>
             <p className="text-xs text-ink-400">reward</p>
           </div>
         </div>
@@ -347,7 +348,7 @@ export function TaskDetailPage() {
               <BadgeCheck className="h-5 w-5 text-accent-400" />
               <div>
                 <p className="text-sm font-semibold text-accent-400">
-                  Approved! {formatMoney(submission!.reward_amount)} credited to your wallet.
+                  Approved! {formatCoins(Number(submission!.reward_amount))} · {formatInr(Number(submission!.reward_amount))} credited to your wallet.
                 </p>
                 {submission!.is_auto_verified && (
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-400">
