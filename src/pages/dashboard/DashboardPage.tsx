@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction, TaskSubmission, Referral } from '@/types';
-import { formatCoins, formatSignedCoins } from '@/lib/format';
+import { formatCoins, formatSignedCoins, formatCoinsWithInr, formatInr, CONVERSION_HINT } from '@/lib/format';
 
 export function DashboardPage() {
   const { user, profile } = useAuth();
@@ -43,10 +43,10 @@ export function DashboardPage() {
   if (loading && !stats) return <Spinner size="lg" className="py-20" />;
 
   const statCards = [
-    { label: 'Available Balance', value: stats ? formatCoins(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
-    { label: 'Pending Rewards', value: stats ? formatCoins(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
-    { label: 'Total Earned', value: stats ? formatCoins(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
-    { label: 'Referral Earnings', value: stats ? formatCoins(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Available Balance', value: stats ? formatCoinsWithInr(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
+    { label: 'Pending Rewards', value: stats ? formatCoinsWithInr(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
+    { label: 'Total Earned', value: stats ? formatCoinsWithInr(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Referral Earnings', value: stats ? formatCoinsWithInr(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
   ];
 
   const statRow = [
@@ -81,6 +81,10 @@ export function DashboardPage() {
           </div>
         </div>
       )}
+
+      <div className="flex items-center justify-end">
+        <span className="rounded-full bg-ink-800/60 px-3 py-1 text-xs font-medium text-ink-400">{CONVERSION_HINT}</span>
+      </div>
 
       {/* Balance cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -197,7 +201,7 @@ export function DashboardPage() {
                   <p className="text-xs text-ink-400">{ref.referred?.referral_code}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  {ref.reward_amount > 0 && <span className="text-sm font-bold text-accent-400">{formatCoins(ref.reward_amount)}</span>}
+                  {ref.reward_amount > 0 && <span className="text-sm font-bold text-accent-400">{formatCoins(ref.reward_amount)} · {formatInr(ref.reward_amount)}</span>}
                   <StatusBadge status={ref.status} />
                 </div>
               </div>

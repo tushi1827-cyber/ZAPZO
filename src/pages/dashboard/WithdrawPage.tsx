@@ -12,7 +12,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod, Settings, GiftCardDenomination } from '@/types';
-import { formatCoins } from '@/lib/format';
+import { formatCoins, formatInr, CONVERSION_HINT } from '@/lib/format';
 
 const UPI_BASIC_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
 
@@ -280,7 +280,7 @@ export function WithdrawPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white">Withdraw</h1>
-        <p className="mt-1 text-sm text-ink-400">Request a payout via UPI, Bank Transfer, or redeem a gift card.</p>
+        <p className="mt-1 text-sm text-ink-400">Request a payout via UPI, Bank Transfer, or redeem a gift card. <span className="font-medium text-ink-300">{CONVERSION_HINT}</span></p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -292,6 +292,7 @@ export function WithdrawPage() {
               <div className="text-right">
                 <p className="text-xs text-ink-400">Available Balance</p>
                 <p className="text-lg font-bold text-accent-400">{formatCoins(balance)}</p>
+                <p className="text-xs text-ink-400">{formatInr(balance)}</p>
               </div>
             </div>
 
@@ -502,7 +503,7 @@ export function WithdrawPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-ink-400">Available Balance</span>
-                    <span className="font-medium text-white">{formatCoins(balance)}</span>
+                    <span className="font-medium text-white">{formatCoins(balance)} · {formatInr(balance)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-ink-400">Payment Method</span>
@@ -512,16 +513,16 @@ export function WithdrawPage() {
                     <span className="text-ink-400">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
                     <span className="font-medium text-white">
                       {isGiftCard
-                        ? (selectedDenominationId ? formatCoins(Number(amount)) : '—')
-                        : (amount ? formatCoins(parseFloat(amount) || 0) : '—')}
+                        ? (selectedDenominationId ? `${formatCoins(Number(amount))} · ${formatInr(Number(amount))}` : '—')
+                        : (amount ? `${formatCoins(parseFloat(amount) || 0)} · ${formatInr(parseFloat(amount) || 0)}` : '—')}
                     </span>
                   </div>
                   <div className="border-t border-ink-200 pt-2 flex justify-between">
                     <span className="font-semibold text-ink-50">Final Amount</span>
                     <span className="font-bold text-accent-400">
                       {isGiftCard
-                        ? (selectedDenominationId ? formatCoins(Number(amount)) : '—')
-                        : (amount ? formatCoins(parseFloat(amount) || 0) : '—')}
+                        ? (selectedDenominationId ? `${formatCoins(Number(amount))} · ${formatInr(Number(amount))}` : '—')
+                        : (amount ? `${formatCoins(parseFloat(amount) || 0)} · ${formatInr(parseFloat(amount) || 0)}` : '—')}
                     </span>
                   </div>
                 </div>

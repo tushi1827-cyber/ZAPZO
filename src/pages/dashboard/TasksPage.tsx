@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Task, TaskSubmission } from '@/types';
+import { formatCoinsWithInr, CONVERSION_HINT } from '@/lib/format';
 
 const categories = ['all', 'social', 'survey', 'website', 'app', 'learning', 'other'] as const;
 
@@ -72,7 +73,7 @@ export function TasksPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white">Browse Tasks</h1>
-        <p className="mt-1 text-sm text-ink-400">Complete verified tasks to earn rewards. Rewards are credited after admin approval.</p>
+        <p className="mt-1 text-sm text-ink-400">Complete verified tasks to earn rewards. Rewards are credited after admin approval. <span className="font-medium text-ink-300">{CONVERSION_HINT}</span></p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -144,7 +145,7 @@ export function TasksPage() {
                 <h3 className="mt-3 font-bold text-white">{task.title}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-ink-400">{task.description}</p>
                 <div className="mt-4 flex items-center gap-4 text-xs text-ink-400">
-                  <span className="flex items-center gap-1"><Coins className="h-4 w-4 text-accent-400" /> {Number(task.reward).toLocaleString('en-IN', { maximumFractionDigits: 0 })} Coins</span>
+                  <span className="flex items-center gap-1"><Coins className="h-4 w-4 text-accent-400" /> {formatCoinsWithInr(task.reward)}</span>
                   <span className="flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-ink-400" /> {task.approved_count}/{task.max_completions} approved</span>
                   {task.status === 'paused' && <span className="flex items-center gap-1 text-warning-400"><AlertCircle className="h-3.5 w-3.5" /> paused</span>}
                 </div>
