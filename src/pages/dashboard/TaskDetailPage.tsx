@@ -14,7 +14,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Task, TaskSubmission } from '@/types';
 import { Zap } from 'lucide-react';
-import { formatCoinsWithInr, CONVERSION_HINT } from '@/lib/format';
+import { formatCoins } from '@/lib/format';
 
 const formatFileSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
@@ -258,8 +258,8 @@ export function TaskDetailPage() {
             <h1 className="text-2xl font-bold text-white">{task.title}</h1>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-2xl font-bold text-accent-400">{formatCoinsWithInr(task.reward)}</p>
-            <p className="text-xs text-ink-400">{CONVERSION_HINT}</p>
+            <p className="text-2xl font-bold text-accent-400">{formatCoins(task.reward)}</p>
+            <p className="text-xs text-ink-400">reward</p>
           </div>
         </div>
         <p className="mt-4 text-ink-400">{task.description}</p>
@@ -345,7 +345,7 @@ export function TaskDetailPage() {
               <BadgeCheck className="h-5 w-5 text-accent-400" />
               <div>
                 <p className="text-sm font-semibold text-accent-400">
-                  Approved! {formatCoinsWithInr(submission!.reward_amount)} credited to your wallet.
+                  Approved! {formatCoins(submission!.reward_amount)} credited to your wallet.
                 </p>
                 {submission!.is_auto_verified && (
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-400">

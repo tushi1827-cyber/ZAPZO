@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Referral } from '@/types';
-import { formatCoins, formatCoinsWithInr, formatInr, CONVERSION_HINT } from '@/lib/format';
+import { formatCoins } from '@/lib/format';
 
 export function ReferralsPage() {
   const { user, profile } = useAuth();
@@ -66,14 +66,14 @@ export function ReferralsPage() {
   const statCards = [
     { label: 'Total Referrals', value: stats.total, icon: Users, tone: 'bg-brand-600/15 text-brand-400' },
     { label: 'Qualified Referrals', value: stats.qualified, icon: CheckCircle2, tone: 'bg-brand-600/15 text-brand-400' },
-    { label: 'Referral Earnings', value: formatCoinsWithInr(stats.earnings), icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
+    { label: 'Referral Earnings', value: formatCoins(stats.earnings), icon: Coins, tone: 'bg-accent-400/10 text-accent-400' },
   ];
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-white">Referrals</h1>
-        <p className="mt-1 text-sm text-ink-400">Share your code. Earn rewards when friends complete qualifying tasks. <span className="font-medium text-ink-300">{CONVERSION_HINT}</span></p>
+        <p className="mt-1 text-sm text-ink-400">Share your code. Earn rewards when friends complete qualifying tasks.</p>
       </div>
 
       {error && <div className="rounded-xl bg-danger-500/10 p-4 text-sm text-danger-400">{error}</div>}
@@ -156,7 +156,7 @@ export function ReferralsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {ref.status === 'qualified' && <span className="text-sm font-bold text-accent-400">{formatCoins(ref.reward_amount)} · {formatInr(ref.reward_amount)}</span>}
+                  {ref.status === 'qualified' && <span className="text-sm font-bold text-accent-400">{formatCoins(ref.reward_amount)}</span>}
                   <StatusBadge status={ref.status} />
                 </div>
               </div>

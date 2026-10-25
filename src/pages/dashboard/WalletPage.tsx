@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { WalletTransaction } from '@/types';
-import { formatCoins, formatSignedCoins, formatInr, CONVERSION_HINT } from '@/lib/format';
+import { formatCoins, formatSignedCoins } from '@/lib/format';
 
 const typeLabels: Record<string, string> = {
   task_reward: 'Task Reward',
@@ -81,7 +81,6 @@ export function WalletPage() {
           <Wallet className="h-6 w-6 text-brand-400" />
           <p className="mt-3 text-sm text-ink-400">Available Balance</p>
           <p className="mt-1 text-3xl font-bold text-white">{formatCoins(balance)}</p>
-          <p className="mt-1 text-sm font-medium text-brand-300">{formatInr(balance)} · {CONVERSION_HINT}</p>
         </Card>
         <Card className="p-5">
           <div className="flex items-center gap-2">
@@ -91,7 +90,6 @@ export function WalletPage() {
             <div>
               <p className="text-sm text-ink-400">Total Credited</p>
               <p className="text-xl font-bold text-accent-400">{formatCoins(totalIn)}</p>
-              <p className="text-xs text-ink-400">{formatInr(totalIn)}</p>
             </div>
           </div>
         </Card>
@@ -103,7 +101,6 @@ export function WalletPage() {
             <div>
               <p className="text-sm text-ink-400">Total Debited</p>
               <p className="text-xl font-bold text-danger-400">-{formatCoins(Math.abs(totalOut))}</p>
-              <p className="text-xs text-ink-400">{formatInr(Math.abs(totalOut))}</p>
             </div>
           </div>
         </Card>
