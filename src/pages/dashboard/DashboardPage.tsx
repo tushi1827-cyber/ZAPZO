@@ -52,7 +52,7 @@ export function DashboardPage() {
   if (loading && !stats) return <Spinner size="lg" className="py-20" />;
 
   const statCards = [
-    { label: 'Available Balance', value: stats ? formatCoins(stats.availableBalance) : —, icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
+    { label: 'Available Balance', value: stats ? formatCoins(stats.availableBalance) : '—', icon: Wallet, tone: 'bg-brand-600/15 text-brand-400', glow: true },
     { label: 'Pending Rewards', value: stats ? formatMoney(stats.pendingRewards) : '—', icon: Clock, tone: 'bg-warning-500/15 text-warning-400' },
     { label: 'Total Earned', value: stats ? formatMoney(stats.totalEarned) : '—', icon: TrendingUp, tone: 'bg-accent-400/10 text-accent-400' },
     { label: 'Referral Earnings', value: stats ? formatMoney(stats.referralEarnings) : '—', icon: Users, tone: 'bg-accent-400/10 text-accent-400' },
