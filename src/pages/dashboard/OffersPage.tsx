@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Database } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 const OFFERS_CACHE_TTL = 120_000;
 
