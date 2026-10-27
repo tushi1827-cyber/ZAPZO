@@ -484,7 +484,7 @@ export function OffersPage() {
         <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
           <div className="flex items-center gap-2">
             <Gift className="h-5 w-5 text-brand-400" />
-            <span className="font-semibold text-white">Sponsored Offers</span>
+            <span className="font-semibold text-white">Available Offers</span>
           </div>
           <div className="flex items-center gap-3">
             {offersError && !loadingOffers && (
