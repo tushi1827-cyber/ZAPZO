@@ -6,8 +6,8 @@ import { ProtectedRoute, AdminRoute, AdminPermissionRoute } from '@/components/P
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { FullPageSpinner } from '@/components/ui/Feedback';
-import { LandingPage } from '@/pages/LandingPage';
-import { NotFoundPage } from '@/pages/NotFoundPage';
+const LandingPage = lazy(() => import('@/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage').then(m => ({ default: m.LoginPage })));
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage').then(m => ({ default: m.RegisterPage })));

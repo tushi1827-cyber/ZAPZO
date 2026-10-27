@@ -17,10 +17,33 @@ export function useDashboardStats() {
       const { data: balance, error: balErr } = await supabase.rpc('get_user_balance');
       if (balErr) throw balErr;
 
-      const { data: txns } = await supabase
-        .from('wallet_transactions')
-        .select('type, amount, status')
-        .eq('user_id', user.id);
+      const [
+        { data: txns },
+        { count: tasksCompleted },
+        { count: qualifiedReferrals },
+        { data: wdTxns },
+      ] = await Promise.all([
+        supabase
+          .from('wallet_transactions')
+          .select('type, amount, status')
+          .eq('user_id', user.id),
+        supabase
+          .from('task_submissions')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'approved'),
+        supabase
+          .from('referrals')
+          .select('id', { count: 'exact', head: true })
+          .eq('referrer_id', user.id)
+          .eq('status', 'qualified'),
+        supabase
+          .from('wallet_transactions')
+          .select('amount')
+          .eq('user_id', user.id)
+          .eq('type', 'withdrawal')
+          .eq('status', 'completed'),
+      ]);
 
       const completed = (txns || []).filter((t) => t.status === 'completed');
       const totalEarned = completed
@@ -32,25 +55,6 @@ export function useDashboardStats() {
       const pendingRewards = (txns || [])
         .filter((t) => t.status === 'pending' && t.type === 'withdrawal')
         .reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
-
-      const { count: tasksCompleted } = await supabase
-        .from('task_submissions')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('status', 'approved');
-
-      const { count: qualifiedReferrals } = await supabase
-        .from('referrals')
-        .select('id', { count: 'exact', head: true })
-        .eq('referrer_id', user.id)
-        .eq('status', 'qualified');
-
-      const { data: wdTxns } = await supabase
-        .from('wallet_transactions')
-        .select('amount')
-        .eq('user_id', user.id)
-        .eq('type', 'withdrawal')
-        .eq('status', 'completed');
 
       const totalWithdrawals = (wdTxns || []).reduce((s, t) => s + Math.abs(Number(t.amount)), 0);
 
