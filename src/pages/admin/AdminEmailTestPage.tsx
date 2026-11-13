@@ -150,7 +150,7 @@ export function AdminEmailTestPage() {
             : `Email sent successfully. Queue ID: ${data.id}`,
         });
       }
-    } catch (err) {
+    } catch {
       setResult({ type: 'error', message: 'Network error — could not reach the email service.' });
     } finally {
       setSending(false);
