@@ -143,7 +143,12 @@ export function AdminEmailTestPage() {
       if (!response.ok) {
         setResult({ type: 'error', message: data.error || `Request failed (${response.status})` });
       } else {
-        setResult({ type: 'success', message: `Email sent successfully. Queue ID: ${data.id}` });
+        setResult({
+          type: 'success',
+          message: response.status === 202
+            ? `Email queued and will be retried automatically. Queue ID: ${data.id}`
+            : `Email sent successfully. Queue ID: ${data.id}`,
+        });
       }
     } catch (err) {
       setResult({ type: 'error', message: 'Network error — could not reach the email service.' });
