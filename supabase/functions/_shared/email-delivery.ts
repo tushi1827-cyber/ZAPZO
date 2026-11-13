@@ -1,6 +1,6 @@
 export const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
-export const EMAIL_SENDER = "WorkPixo <noreply@resend.dev>";
+export const EMAIL_SENDER = "WorkPixo <noreply@workpixo.com>";
 
 export type SendOutcome =
   | { kind: "sent" }

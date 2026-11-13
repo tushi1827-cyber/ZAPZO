@@ -5,7 +5,7 @@ import { classifyResendStatus, sendViaResend } from "../../supabase/functions/_s
 const baseParams = {
   apiKey: "test-key",
   idempotencyKey: "queue-row-1",
-  from: "WorkPixo <noreply@resend.dev>",
+  from: "WorkPixo <noreply@workpixo.com>",
   to: "user@example.com",
   subject: "Welcome to WorkPixo",
   html: "<p>Hello</p>",

@@ -1,0 +1,21 @@
+{
+  "projectId": "70193621",
+  "functions": {
+    "offerwall-postback": {
+      "hasChanged": false,
+      "hash": "f90df14f61e25aac361c2a5da9689b953339808058ee8829041f25651a841294"
+    },
+    "process-email-queue": {
+      "hasChanged": false,
+      "hash": "0366cdf5da4e1a52773c40221f913a4ed9aec5e24c6b3005c14fde0ff6ad63f4d9bb913b9a7ca76eb27e690d3a3a09eb82227baddb7aaa0cac2a2a101b34b9e4"
+    },
+    "send-email": {
+      "hasChanged": false,
+      "hash": "798de1b7afd18e794624ede0d8cd88658116d23244eb39d7ad24e9d6da0da7d4d9bb913b9a7ca76eb27e690d3a3a09eb82227baddb7aaa0cac2a2a101b34b9e4"
+    },
+    "submit-task": {
+      "hasChanged": false,
+      "hash": "52af1df6ba8c135a6de90de3951754d9ce5e33e6ec4e5da57307c43fca0b87d4"
+    }
+  }
+}
