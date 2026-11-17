@@ -3,8 +3,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, Wallet, Users, Home,
   Menu, LogOut, Shield, Zap, Ban, Bell,
-  LifeBuoy, MessageCircle, Flag,
-  ShieldAlert, AlertCircle, ChevronDown, ChevronRight, UserCircle,
+  LifeBuoy, Flag, UserCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -16,18 +15,11 @@ type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
 
 const mainNav: NavItem[] = [
   { to: '/dashboard/home', label: 'Home', icon: Home },
-  { to: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
+  { to: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
-  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
-];
-
-type HelpSubItem = { to: string; label: string; icon: typeof LifeBuoy; match: string };
-
-const helpSubNav: HelpSubItem[] = [
-  { to: '/dashboard/support', label: 'Contact Support', icon: MessageCircle, match: '/dashboard/support' },
-  { to: '/dashboard/support?tab=complaint', label: 'Raise a Complaint', icon: ShieldAlert, match: '/dashboard/support?tab=complaint' },
-  { to: '/dashboard/support?tab=problem', label: 'Report a Problem', icon: AlertCircle, match: '/dashboard/support?tab=problem' },
-  { to: '/dashboard/support?tab=tickets', label: 'My Support Tickets', icon: LifeBuoy, match: '/dashboard/support?tab=tickets' },
+  { to: '/dashboard/account', label: 'Account', icon: UserCircle },
+  { to: '/dashboard/support', label: 'Help & Support', icon: LifeBuoy },
+  { to: '/dashboard/feedback', label: 'Feedback & Report', icon: Flag },
 ];
 
 function NotificationBell() {
@@ -72,7 +64,7 @@ function NotificationBell() {
 const bottomNav: NavItem[] = [
   { to: '/dashboard/home', label: 'Home', icon: Home },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
-  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
+  { to: '/dashboard/account', label: 'Account', icon: UserCircle },
 ];
 
 function MobileBottomNav() {
@@ -117,25 +109,21 @@ export function DashboardLayout() {
   };
 
   const NavContent = () => {
-    const [helpOpen, setHelpOpen] = useState(
-      location.pathname === '/dashboard/support'
-    );
-    const helpActive = location.pathname === '/dashboard/support';
-    const feedbackActive = location.pathname === '/dashboard/feedback';
-
     return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-5">
         <Logo size="sm" />
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
-        <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Main</p>
+        <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Menu</p>
         {mainNav.map((item) => {
           const active = item.to === '/dashboard/account'
             ? location.pathname === '/dashboard' || location.pathname === '/dashboard/account'
             : item.to === '/dashboard/home'
               ? location.pathname === '/dashboard' || location.pathname === '/dashboard/home'
-              : location.pathname === item.to;
+              : item.to === '/dashboard/support'
+                ? location.pathname === '/dashboard/support'
+                : location.pathname === item.to;
           return (
             <Link
               key={item.to}
@@ -152,58 +140,6 @@ export function DashboardLayout() {
             </Link>
           );
         })}
-
-        <div className="my-2 h-px bg-ink-200/50" />
-
-        {/* Help & Support section */}
-        <button
-          onClick={() => setHelpOpen((v) => !v)}
-          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-            helpActive
-              ? 'text-white'
-              : 'text-ink-400 hover:bg-ink-800 hover:text-white'
-          }`}
-        >
-          <LifeBuoy className="h-5 w-5" />
-          <span className="flex-1 text-left">Help &amp; Support</span>
-          {helpOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-        </button>
-        {helpOpen && (
-          <div className="space-y-0.5 pl-3">
-            {helpSubNav.map((item) => {
-              const active = location.pathname === '/dashboard/support' && location.search === item.match.replace('/dashboard/support', '');
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
-                    active
-                      ? 'bg-brand-600/15 text-brand-400 font-medium'
-                      : 'text-ink-400 hover:bg-ink-800 hover:text-white'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Feedback & Report */}
-        <Link
-          to="/dashboard/feedback"
-          onClick={() => setOpen(false)}
-          className={`mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-            feedbackActive
-              ? 'bg-brand-600 text-white shadow-glow-purple'
-              : 'text-ink-400 hover:bg-ink-800 hover:text-white'
-          }`}
-        >
-          <Flag className="h-5 w-5" />
-          Feedback &amp; Report
-        </Link>
 
         {isAdmin && (
           <>
