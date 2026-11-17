@@ -93,18 +93,34 @@ function CollapsibleCard({ title, icon, children }: { title: string; icon: React
 
 function MethodIcon({ method }: { method: WithdrawalMethod }) {
   if (method === 'upi') {
-    return <span className="grid h-10 w-10 place-items-center rounded-xl bg-white ring-1 ring-gray-100"><img src={upiLogoUrl} alt="UPI" className="h-5 w-auto px-1" /></span>;
+    return <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white ring-1 ring-gray-100"><img src={upiLogoUrl} alt="UPI" className="h-6 w-auto" /></span>;
   }
   if (method === 'bank_transfer') {
     return (
-      <span className="grid h-10 w-10 place-items-center rounded-xl bg-success-50 text-success-600 ring-1 ring-success-100">
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-success-50 text-success-600 ring-1 ring-success-100">
         <Landmark className="h-5 w-5" />
       </span>
     );
   }
-  if (method === 'amazon_gift_card') return <span className="grid h-10 w-10 place-items-center"><AmazonLogo className="h-10 w-10" /></span>;
-  if (method === 'flipkart_gift_card') return <span className="grid h-10 w-10 place-items-center"><FlipkartLogo className="h-10 w-10" /></span>;
-  return <span className="grid h-10 w-10 place-items-center"><GooglePlayLogo className="h-10 w-10" /></span>;
+  if (method === 'amazon_gift_card') {
+    return (
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white ring-1 ring-gray-100">
+        <AmazonLogo className="h-4 w-9" />
+      </span>
+    );
+  }
+  if (method === 'flipkart_gift_card') {
+    return (
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white ring-1 ring-gray-100">
+        <FlipkartLogo className="h-4 w-10" />
+      </span>
+    );
+  }
+  return (
+    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white ring-1 ring-gray-100">
+      <GooglePlayLogo className="h-6 w-6" />
+    </span>
+  );
 }
 
 function WithdrawStatusBadge({ status }: { status: string }) {
@@ -366,22 +382,20 @@ export function WithdrawPage() {
             {/* Main column */}
             <div className="space-y-6 lg:col-span-2">
               {/* Balance card */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-success-700 via-success-600 to-success-500 p-5 text-white shadow-md sm:p-6">
-                <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
-                <div className="pointer-events-none absolute -bottom-12 left-1/3 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+              <div className="relative overflow-hidden rounded-2xl border border-success-200/60 bg-gradient-to-br from-success-600 to-success-700 p-5 text-white shadow-sm sm:p-6">
                 <div className="relative">
                   <p className="text-sm font-medium text-white/80">Available Balance</p>
                   <p className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">{formatCoins(balance)}</p>
-                  <p className="mt-1.5 text-sm font-medium text-white/85">{formatInr(balance)}</p>
+                  <p className="mt-1.5 text-sm font-medium text-white/75">{formatInr(balance)}</p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium ring-1 ring-white/25">
+                    <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium">
                       Min withdrawal: {formatCoins(minWithdrawal)}
                     </span>
-                    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium ring-1 ring-white/25">
+                    <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-medium">
                       Max per request: {formatCoins(balance)}
                     </span>
                     {hasPending && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/25 px-3 py-1 text-xs font-medium ring-1 ring-amber-200/50">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-medium">
                         <Clock className="h-3 w-3" /> A request is awaiting review
                       </span>
                     )}
@@ -419,24 +433,24 @@ export function WithdrawPage() {
                           type="button"
                           onClick={() => handleMethodChange(opt.value)}
                           disabled={hasPending}
-                          className={`relative flex h-full min-w-0 flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-all duration-200 ${
+                          className={`relative flex min-w-0 flex-col items-start gap-2.5 rounded-xl border-2 p-3 text-left transition-all duration-200 ${
                             selected
                               ? 'border-success-500 bg-success-50/70'
                               : 'border-gray-200 bg-white hover:border-success-300 hover:bg-success-50/30'
                           } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                           {selected && (
-                            <span className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-success-600 text-white ring-2 ring-white">
-                              <Check className="h-3 w-3" />
+                            <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-success-600 text-white ring-2 ring-white">
+                              <Check className="h-3.5 w-3.5" />
                             </span>
                           )}
                           <MethodIcon method={opt.value} />
-                          <div className="mt-auto min-w-0">
-                            <p className="truncate text-sm font-semibold text-gray-900">{opt.label}</p>
-                            <p className="mt-0.5 line-clamp-2 text-xs leading-4 text-gray-500">{opt.description}</p>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold leading-5 text-gray-900">{opt.label}</p>
+                            <p className="mt-1 line-clamp-2 text-xs leading-4 text-gray-500">{opt.description}</p>
                           </div>
                           {opt.isGiftCard && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
+                            <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
                               <Gift className="h-2.5 w-2.5" /> Gift Card
                             </span>
                           )}

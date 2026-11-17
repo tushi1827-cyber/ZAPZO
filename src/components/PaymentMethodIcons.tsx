@@ -55,76 +55,34 @@ export function BankLogo({ className = '' }: IconProps) {
 
 export function AmazonLogo({ className = '' }: IconProps) {
   return (
-    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="amz_bg" x1="0" y1="0" x2="64" y2="64">
-          <stop stopColor="#232F3E" />
-          <stop offset="1" stopColor="#131A22" />
-        </linearGradient>
-        <linearGradient id="amz_smile" x1="16" y1="36" x2="48" y2="42">
-          <stop stopColor="#FF9900" />
-          <stop offset="1" stopColor="#FFB84D" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="16" fill="url(#amz_bg)" />
-      <text x="32" y="26" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="10" fill="#FF9900" letterSpacing="0.5">amazon</text>
-      <path d="M16 36 C24 45 40 45 48 36" stroke="url(#amz_smile)" strokeWidth="3" strokeLinecap="round" fill="none" />
-      <path d="M45 33 L49 37 L44 40" stroke="url(#amz_smile)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-      <text x="32" y="52" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="6.5" fill="#a3e635" letterSpacing="0.8">GIFT CARD</text>
+    <svg viewBox="0 0 175 60" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Amazon">
+      <path d="M40 42 C55 52 80 52 95 40 C94 38 91 37 89 38 C75 45 58 45 43 36 C41 35 39 40 40 42 Z" fill="#FF9900" />
+      <path d="M88 34 L95 40 L88 47" stroke="#FF9900" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <text x="62" y="34" fontFamily="Arial, Helvetica, sans-serif" fontWeight="800" fontSize="30" fill="#232F3E" letterSpacing="-1">amazon</text>
     </svg>
   );
 }
 
 export function FlipkartLogo({ className = '' }: IconProps) {
   return (
-    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="fk_bg" x1="0" y1="0" x2="64" y2="64">
-          <stop stopColor="#2874F0" />
-          <stop offset="1" stopColor="#1452C9" />
-        </linearGradient>
-        <linearGradient id="fk_star" x1="34" y1="30" x2="42" y2="42">
-          <stop stopColor="#FFE500" />
-          <stop offset="1" stopColor="#FFC700" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="16" fill="url(#fk_bg)" />
-      <text x="32" y="22" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="800" fontSize="8" fill="#FFE500" letterSpacing="0.3">Flipkart</text>
-      <path d="M26 28 L36 34 L26 42 Z" fill="url(#fk_star)" />
-      <circle cx="38" cy="38" r="6" fill="url(#fk_star)" />
-      <path d="M36 34 L42 40" stroke="#2874F0" strokeWidth="2.5" strokeLinecap="round" />
-      <text x="32" y="52" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="6.5" fill="#a3e635" letterSpacing="0.8">GIFT CARD</text>
+    <svg viewBox="0 0 160 48" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flipkart">
+      <text x="0" y="33" fontFamily="Arial, Helvetica, sans-serif" fontWeight="800" fontSize="26" fill="#2874F0" letterSpacing="-0.5" fontStyle="italic">Flipkart</text>
+      <text x="105" y="33" fontFamily="Arial, Helvetica, sans-serif" fontWeight="700" fontSize="16" fill="#FFC700" letterSpacing="0">+</text>
+      <circle cx="120" cy="24" r="11" fill="#FFC700" />
+      <path d="M114 18 L127 24 L114 30 Z" fill="#2874F0" />
     </svg>
   );
 }
 
 export function GooglePlayLogo({ className = '' }: IconProps) {
   return (
-    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gp_bg" x1="0" y1="0" x2="64" y2="64">
-          <stop stopColor="#0D1117" />
-          <stop offset="1" stopColor="#050810" />
-        </linearGradient>
-        <linearGradient id="gp_tri1" x1="16" y1="14" x2="38" y2="32">
-          <stop stopColor="#00D4FF" />
-          <stop offset="1" stopColor="#0099CC" />
-        </linearGradient>
-        <linearGradient id="gp_tri2" x1="16" y1="50" x2="38" y2="32">
-          <stop stopColor="#a3e635" />
-          <stop offset="1" stopColor="#65a30d" />
-        </linearGradient>
-        <linearGradient id="gp_tri3" x1="38" y1="24" x2="50" y2="40">
-          <stop stopColor="#FF6B6B" />
-          <stop offset="1" stopColor="#E04545" />
-        </linearGradient>
-      </defs>
-      <rect width="64" height="64" rx="16" fill="url(#gp_bg)" />
-      <path d="M16 14 L38 30 L34 34 L16 50 Z" fill="url(#gp_tri1)" />
-      <path d="M16 50 L34 34 L38 30 L16 14 Z M16 50 L34 34 L38 38 L20 52 Z" fill="url(#gp_tri2)" opacity="0.85" />
-      <path d="M38 30 L50 24 L40 36 L36 32 Z" fill="url(#gp_tri3)" />
-      <path d="M38 38 L50 40 L40 48 L36 40 Z" fill="url(#gp_tri2)" />
-      <text x="32" y="56" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="5.5" fill="#a3e635" letterSpacing="0.5">GIFT CARD</text>
+    <svg viewBox="0 0 512 512" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Google Play">
+      <path d="M48 32 C32 41 32 59 48 68 L314 222 L260 276 L22 38 C16 42 12 50 12 58 C12 66 16 74 22 78 L260 276 L314 330 L48 444 C32 453 32 471 48 480 L78 464 L354 304 L304 256 L354 208 L78 48 L48 32 Z" fill="#00C2FF" transform="translate(70 0)" />
+      <path d="M304 256 L354 304 L424 264 C448 250 448 222 424 208 L354 208 L304 256 Z" fill="#00C2FF" transform="translate(70 0)" />
+      <path d="M48 68 L304 208 L354 208 L78 48 L48 68 Z" fill="#00E676" transform="translate(70 0)" />
+      <path d="M48 444 L304 304 L354 304 L78 464 L48 444 Z" fill="#FF3A44" transform="translate(70 0)" />
+      <path d="M304 208 L354 208 L304 256 L260 276 L304 208 Z" fill="#FFCD00" transform="translate(70 0)" />
+      <path d="M304 304 L354 304 L304 256 L260 276 L304 304 Z" fill="#FFCD00" transform="translate(70 0)" />
     </svg>
   );
 }
