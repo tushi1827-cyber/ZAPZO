@@ -15,14 +15,13 @@ const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage').
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 
 const DashboardLayout = lazy(() => import('@/components/DashboardLayout').then(m => ({ default: m.DashboardLayout })));
-const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const MyAccountPage = lazy(() => import('@/pages/dashboard/MyAccountPage').then(m => ({ default: m.MyAccountPage })));
 const TasksPage = lazy(() => import('@/pages/dashboard/TasksPage').then(m => ({ default: m.TasksPage })));
 const MySubmissionsPage = lazy(() => import('@/pages/dashboard/MySubmissionsPage').then(m => ({ default: m.MySubmissionsPage })));
 const TaskDetailPage = lazy(() => import('@/pages/dashboard/TaskDetailPage').then(m => ({ default: m.TaskDetailPage })));
 const WalletPage = lazy(() => import('@/pages/dashboard/WalletPage').then(m => ({ default: m.WalletPage })));
 const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage').then(m => ({ default: m.ReferralsPage })));
 const WithdrawPage = lazy(() => import('@/pages/dashboard/WithdrawPage').then(m => ({ default: m.WithdrawPage })));
-const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
 const OffersPage = lazy(() => import('@/pages/dashboard/OffersPage').then(m => ({ default: m.OffersPage })));
@@ -92,14 +91,15 @@ export default function App() {
 
               {/* User dashboard (protected) */}
               <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                <Route index element={<DashboardPage />} />
+                <Route index element={<MyAccountPage />} />
+                <Route path="account" element={<MyAccountPage />} />
                 <Route path="tasks" element={<TasksPage />} />
                 <Route path="submissions" element={<MySubmissionsPage />} />
                 <Route path="tasks/:id" element={<TaskDetailPage />} />
                 <Route path="wallet" element={<WalletPage />} />
                 <Route path="referrals" element={<ReferralsPage />} />
                 <Route path="withdraw" element={<WithdrawPage />} />
-                <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile" element={<Navigate to="/dashboard/account?tab=profile" replace />} />
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="support" element={<DashboardSupportPage />} />
                 <Route path="support/:id" element={<TicketDetailPage />} />

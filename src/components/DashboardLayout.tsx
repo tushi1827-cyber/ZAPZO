@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardList, Wallet, Users,
-  Menu, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
+  Menu, LogOut, Shield, Zap, Ban, Bell, FileCheck,
   LifeBuoy, MessageCircle, MessageSquare, Sparkles,
-  ShieldAlert, AlertCircle, ChevronDown, ChevronRight,
+  ShieldAlert, AlertCircle, ChevronDown, ChevronRight, UserCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
@@ -15,13 +15,12 @@ import {
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
 
 const mainNav: NavItem[] = [
-  { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
   { to: '/dashboard/tasks', label: 'Browse Tasks', icon: ClipboardList },
   { to: '/dashboard/offers', label: 'Earn with Offers', icon: Sparkles },
   { to: '/dashboard/submissions', label: 'My Submissions', icon: FileCheck },
   { to: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
-  { to: '/dashboard/profile', label: 'Profile', icon: SettingsIcon },
 ];
 
 type HelpSubItem = { to: string; label: string; icon: typeof LifeBuoy; match: string };
@@ -100,7 +99,9 @@ export function DashboardLayout() {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3">
         <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Main</p>
         {mainNav.map((item) => {
-          const active = location.pathname === item.to;
+          const active = item.to === '/dashboard/account'
+            ? location.pathname === '/dashboard' || location.pathname === '/dashboard/account'
+            : location.pathname === item.to;
           return (
             <Link
               key={item.to}
@@ -171,7 +172,7 @@ export function DashboardLayout() {
         )}
       </nav>
       <div className="border-t border-ink-200 p-4">
-        <Link to="/dashboard/profile" className="flex items-center gap-3 rounded-xl bg-ink-800/50 p-3 transition hover:bg-ink-800">
+        <Link to="/dashboard/account" className="flex items-center gap-3 rounded-xl bg-ink-800/50 p-3 transition hover:bg-ink-800">
           <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-600/15 text-brand-400">
             <Zap className="h-4 w-4" fill="currentColor" />
           </div>
