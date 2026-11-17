@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import upiLogoUrl from '@/assets/upi-logo.svg';
 import {
   ArrowDownToLine, CheckCircle2, AlertCircle, Clock,
-  Info, Gift, Mail, Check, Landmark,
+  Info, Gift, Mail, Check, Landmark, ChevronDown,
 } from 'lucide-react';
 import { AmazonLogo, FlipkartLogo, GooglePlayLogo } from '@/components/PaymentMethodIcons';
 import { Spinner, EmptyState } from '@/components/ui/Feedback';
@@ -68,9 +68,32 @@ function methodLabel(m: WithdrawalMethod): string {
 const inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:border-success-500 focus:outline-none focus:ring-2 focus:ring-success-500/20 disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'mb-1.5 block text-sm font-medium text-gray-700';
 
+const QUICK_AMOUNTS = [50, 100, 200];
+
+function CollapsibleCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-2xl bg-white shadow-sm ring-1 ring-gray-200/70">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 p-5 text-left"
+      >
+        <span className="flex items-center gap-2">
+          {icon}
+          <span className="font-bold text-gray-900">{title}</span>
+        </span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="border-t border-gray-100 px-5 pb-5 pt-3">{children}</div>}
+    </div>
+  );
+}
+
 function MethodIcon({ method }: { method: WithdrawalMethod }) {
   if (method === 'upi') {
-    return <img src={upiLogoUrl} alt="UPI" className="h-7 w-auto" />;
+    return <span className="grid h-10 w-10 place-items-center rounded-xl bg-white ring-1 ring-gray-100"><img src={upiLogoUrl} alt="UPI" className="h-5 w-auto px-1" /></span>;
   }
   if (method === 'bank_transfer') {
     return (
@@ -79,9 +102,9 @@ function MethodIcon({ method }: { method: WithdrawalMethod }) {
       </span>
     );
   }
-  if (method === 'amazon_gift_card') return <AmazonLogo className="h-10 w-10" />;
-  if (method === 'flipkart_gift_card') return <FlipkartLogo className="h-10 w-10" />;
-  return <GooglePlayLogo className="h-10 w-10" />;
+  if (method === 'amazon_gift_card') return <span className="grid h-10 w-10 place-items-center"><AmazonLogo className="h-10 w-10" /></span>;
+  if (method === 'flipkart_gift_card') return <span className="grid h-10 w-10 place-items-center"><FlipkartLogo className="h-10 w-10" /></span>;
+  return <span className="grid h-10 w-10 place-items-center"><GooglePlayLogo className="h-10 w-10" /></span>;
 }
 
 function WithdrawStatusBadge({ status }: { status: string }) {
@@ -343,13 +366,13 @@ export function WithdrawPage() {
             {/* Main column */}
             <div className="space-y-6 lg:col-span-2">
               {/* Balance card */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-success-600 via-success-500 to-success-600 p-5 text-white shadow-md sm:p-6">
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-success-700 via-success-600 to-success-500 p-5 text-white shadow-md sm:p-6">
                 <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
                 <div className="pointer-events-none absolute -bottom-12 left-1/3 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
                 <div className="relative">
                   <p className="text-sm font-medium text-white/80">Available Balance</p>
-                  <p className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">{formatCoins(balance)}</p>
-                  <p className="mt-0.5 text-sm text-white/80">{formatInr(balance)}</p>
+                  <p className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">{formatCoins(balance)}</p>
+                  <p className="mt-1.5 text-sm font-medium text-white/85">{formatInr(balance)}</p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium ring-1 ring-white/25">
                       Min withdrawal: {formatCoins(minWithdrawal)}
@@ -396,24 +419,24 @@ export function WithdrawPage() {
                           type="button"
                           onClick={() => handleMethodChange(opt.value)}
                           disabled={hasPending}
-                          className={`relative flex min-w-0 flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all duration-200 ${
+                          className={`relative flex h-full min-w-0 flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-all duration-200 ${
                             selected
-                              ? 'border-success-500 bg-success-50 ring-1 ring-success-500'
-                              : 'border-gray-200 bg-white hover:border-success-400 hover:bg-success-50/40'
+                              ? 'border-success-500 bg-success-50/70'
+                              : 'border-gray-200 bg-white hover:border-success-300 hover:bg-success-50/30'
                           } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                           {selected && (
-                            <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-success-600 text-white">
+                            <span className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-success-600 text-white ring-2 ring-white">
                               <Check className="h-3 w-3" />
                             </span>
                           )}
                           <MethodIcon method={opt.value} />
-                          <div className="min-w-0">
-                            <p className={`truncate text-sm font-semibold ${selected ? 'text-gray-900' : 'text-gray-800'}`}>{opt.label}</p>
-                            <p className="mt-0.5 text-xs leading-5 text-gray-500">{opt.description}</p>
+                          <div className="mt-auto min-w-0">
+                            <p className="truncate text-sm font-semibold text-gray-900">{opt.label}</p>
+                            <p className="mt-0.5 line-clamp-2 text-xs leading-4 text-gray-500">{opt.description}</p>
                           </div>
                           {opt.isGiftCard && (
-                            <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
                               <Gift className="h-2.5 w-2.5" /> Gift Card
                             </span>
                           )}
@@ -524,8 +547,46 @@ export function WithdrawPage() {
 
                   {/* Manual amount for UPI / Bank transfer */}
                   {!isGiftCard && (
-                    <div>
-                      <label htmlFor="amount" className={labelClass}>Withdrawal Amount (Coins)</label>
+                    <div className="rounded-xl border border-gray-200 bg-white p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <label htmlFor="amount" className={labelClass}>Withdrawal Amount (Coins)</label>
+                        <div className="flex gap-2">
+                          {QUICK_AMOUNTS.map((q) => {
+                            const eligible = balance >= q && q >= minWithdrawal;
+                            return (
+                              <button
+                                key={q}
+                                type="button"
+                                disabled={hasPending || !eligible}
+                                onClick={() => { setAmount(String(q)); setError(''); }}
+                                className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                                  Number(amount) === q
+                                    ? 'border-success-500 bg-success-50 text-success-700'
+                                    : eligible
+                                      ? 'border-gray-200 text-gray-600 hover:border-success-400 hover:bg-success-50/50 hover:text-success-700'
+                                      : 'cursor-not-allowed border-gray-100 text-gray-300'
+                                }`}
+                              >
+                                {q}
+                              </button>
+                            );
+                          })}
+                          <button
+                            type="button"
+                            disabled={hasPending || balance < minWithdrawal}
+                            onClick={() => { setAmount(String(balance)); setError(''); }}
+                            className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                              Number(amount) === balance && amount !== ''
+                                ? 'border-success-500 bg-success-50 text-success-700'
+                                : balance >= minWithdrawal
+                                  ? 'border-gray-200 text-gray-600 hover:border-success-400 hover:bg-success-50/50 hover:text-success-700'
+                                  : 'cursor-not-allowed border-gray-100 text-gray-300'
+                            }`}
+                          >
+                            MAX
+                          </button>
+                        </div>
+                      </div>
                       <input
                         id="amount"
                         name="amount"
@@ -538,18 +599,18 @@ export function WithdrawPage() {
                         className={inputClass}
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Minimum withdrawal: {formatCoins(minWithdrawal)} • Available: {formatCoins(balance)}
+                        Minimum withdrawal: {formatCoins(minWithdrawal)} • Maximum: {formatCoins(balance)} (your available balance)
                       </p>
                     </div>
                   )}
 
                   {/* Summary */}
-                  <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-gray-100">
-                    <p className="text-sm font-semibold text-gray-900">Withdrawal Summary</p>
-                    <div className="mt-3 space-y-2 text-sm">
+                  <div className="rounded-xl border border-gray-200 bg-gradient-to-b from-gray-50 to-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Withdrawal Summary</p>
+                    <div className="mt-3 space-y-2.5 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-500">Available Balance</span>
-                        <span className="font-medium text-gray-900">{formatCoins(balance)} · {formatInr(balance)}</span>
+                        <span className="font-medium text-gray-700">{formatCoins(balance)} <span className="text-gray-400">· {formatInr(balance)}</span></span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-500">Payment Method</span>
@@ -561,9 +622,9 @@ export function WithdrawPage() {
                           {summaryAmount !== null ? `${formatCoins(summaryAmount)} · ${formatInr(summaryAmount)}` : '—'}
                         </span>
                       </div>
-                      <div className="flex justify-between border-t border-gray-200 pt-2">
-                        <span className="font-semibold text-gray-900">Final Amount</span>
-                        <span className="font-bold text-success-600">
+                      <div className="mt-1 flex items-center justify-between rounded-lg bg-success-50 px-3 py-2.5 ring-1 ring-success-100">
+                        <span className="text-sm font-semibold text-gray-900">Final Amount</span>
+                        <span className="text-base font-bold text-success-700">
                           {summaryAmount !== null ? `${formatCoins(summaryAmount)} · ${formatInr(summaryAmount)}` : '—'}
                         </span>
                       </div>
@@ -606,22 +667,18 @@ export function WithdrawPage() {
                 {withdrawals.length === 0 ? (
                   <EmptyState icon={<Landmark className="h-10 w-10 text-gray-300" />} title="No withdrawals yet" description="Your withdrawal requests will appear here." />
                 ) : (
-                  <div className="mt-4 divide-y divide-gray-100">
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     {withdrawals.map((wd) => (
-                      <div key={wd.id} className="flex items-center justify-between gap-3 py-3.5">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-100">
-                            <ArrowDownToLine className="h-4 w-4" />
-                          </span>
+                      <div key={wd.id} className="rounded-xl border border-gray-200 bg-white p-4 transition hover:border-success-200 hover:shadow-sm">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="text-sm font-bold text-gray-900">-{formatCoins(wd.amount)}</p>
-                            <p className="truncate text-xs text-gray-500">
-                              {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
-                            </p>
-                            {wd.rejection_reason && <p className="mt-0.5 truncate text-xs text-red-600">Rejected: {wd.rejection_reason}</p>}
+                            <p className="mt-0.5 truncate text-xs text-gray-500">{methodLabel(wd.method)}</p>
                           </div>
+                          <WithdrawStatusBadge status={wd.status} />
                         </div>
-                        <WithdrawStatusBadge status={wd.status} />
+                        <p className="mt-2 text-xs text-gray-400">{new Date(wd.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                        {wd.rejection_reason && <p className="mt-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-xs text-red-600">Rejected: {wd.rejection_reason}</p>}
                       </div>
                     ))}
                   </div>
@@ -636,12 +693,21 @@ export function WithdrawPage() {
                   <Info className="h-5 w-5 text-success-600" />
                   <h3 className="font-bold text-gray-900">How withdrawals work</h3>
                 </div>
-                <ol className="mt-3 space-y-2.5 text-xs text-gray-500">
-                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">1</span> Choose a payment method and enter details.</li>
-                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">2</span> For gift cards, select a denomination.</li>
-                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">3</span> Funds are reserved in your wallet immediately.</li>
-                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">4</span> Admin reviews the request.</li>
-                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">5</span> Approved: payout sent. Rejected: funds released back.</li>
+                <ol className="relative mt-4 space-y-5 border-l-2 border-success-100 pl-6">
+                  {[
+                    'Choose a payment method and enter details.',
+                    'For gift cards, select a denomination.',
+                    'Funds are reserved in your wallet immediately.',
+                    'Admin reviews the request.',
+                    'Approved: payout sent. Rejected: funds released back.',
+                  ].map((step, i) => (
+                    <li key={i} className="relative text-xs leading-5 text-gray-500">
+                      <span className="absolute -left-[31px] grid h-5 w-5 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-2 ring-white">
+                        {i + 1}
+                      </span>
+                      {step}
+                    </li>
+                  ))}
                 </ol>
               </div>
               <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
@@ -652,28 +718,26 @@ export function WithdrawPage() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
-                <div className="flex items-center gap-2">
-                  <Info className="h-5 w-5 text-success-600" />
-                  <h3 className="font-bold text-gray-900">Withdrawal Policy</h3>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-gray-500">
+              <CollapsibleCard
+                title="Withdrawal Policy"
+                icon={<Info className="h-5 w-5 text-success-600" />}
+              >
+                <p className="text-xs leading-5 text-gray-500">
                   Before requesting a withdrawal, please review our{' '}
                   <Link to="/withdrawal-policy" className="font-medium text-success-600 hover:text-success-500">
                     Withdrawal Policy
                   </Link>{' '}
                   for details on eligibility, processing, and important information about payout details.
                 </p>
-              </div>
-              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-success-600" />
-                  <h3 className="font-bold text-gray-900">Gift Card Delivery</h3>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-gray-500">
+              </CollapsibleCard>
+              <CollapsibleCard
+                title="Gift Card Delivery"
+                icon={<Mail className="h-5 w-5 text-success-600" />}
+              >
+                <p className="text-xs leading-5 text-gray-500">
                   Amazon, Flipkart, and Google Play gift cards are delivered to the email address you provide. Processing typically takes 1-2 business days after approval.
                 </p>
-              </div>
+              </CollapsibleCard>
             </div>
           </div>
         </div>
