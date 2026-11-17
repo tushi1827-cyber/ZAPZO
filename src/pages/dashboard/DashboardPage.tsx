@@ -142,9 +142,9 @@ export function DashboardPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-ink-50">
                       {tx.type === 'withdrawal'
-                        ? tx.status === 'completed' || tx.status === 'paid'
+                        ? (tx.status as string) === 'completed' || (tx.status as string) === 'paid'
                           ? 'Withdrawal Success'
-                          : tx.status === 'reversed'
+                          : (tx.status as string) === 'reversed'
                             ? 'Withdrawal Reversed'
                             : 'Withdrawal Request'
                         : tx.description}

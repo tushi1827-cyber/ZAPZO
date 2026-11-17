@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LifeBuoy, Plus, Search, MessageCircle, Paperclip, X } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -9,7 +9,8 @@ import { Spinner, EmptyState } from '@/components/ui/Feedback';
 import { StatusBadge, PriorityBadge } from '@/components/ui/Badge';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { SupportTicket, TicketCategory, TicketPriority } from '@/types';
+import { SupportTicket, TicketCategory } from '@/types';
+import { FeedbackPage } from '@/pages/dashboard/FeedbackPage';
 
 const categoryLabels: Record<string, string> = {
   task_issue: 'Task Issue',
@@ -36,6 +37,8 @@ function timeAgo(date: string): string {
 export function SupportPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get('tab');
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -52,6 +55,8 @@ export function SupportPage() {
     attachment: null as File | null,
   });
   const [attachmentName, setAttachmentName] = useState('');
+
+  const isFeedbackTab = tab === 'feedback';
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -78,6 +83,19 @@ export function SupportPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Open the ticket form with a preset category when arriving from the
+  // "Raise a Complaint" / "Report a Problem" sidebar links.
+  useEffect(() => {
+    if (tab === 'complaint' || tab === 'problem') {
+      setForm(f => ({ ...f, category: tab === 'complaint' ? 'account' : 'technical' }));
+      setShowCreate(true);
+    }
+  }, [tab]);
+
+  if (isFeedbackTab) {
+    return <FeedbackPage />;
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -239,7 +257,7 @@ export function SupportPage() {
         )}
       </Card>
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Create Support Ticket" size="md">
+      <Modal open={showCreate} onClose={() => { setShowCreate(false); if (tab) navigate('/dashboard/support'); }} title="Create Support Ticket" size="md">
         <div className="space-y-4">
           {createError && <div className="rounded-xl bg-danger-500/10 p-3 text-sm text-danger-400">{createError}</div>}
 

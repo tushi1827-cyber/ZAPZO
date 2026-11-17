@@ -142,9 +142,9 @@ export function WalletPage() {
                     <div>
                       <p className="text-sm font-medium text-white">
                         {tx.type === 'withdrawal'
-                          ? tx.status === 'completed' || tx.status === 'paid'
+                          ? (tx.status as string) === 'completed' || (tx.status as string) === 'paid'
                             ? 'Withdrawal Success'
-                            : tx.status === 'reversed'
+                            : (tx.status as string) === 'reversed'
                               ? 'Withdrawal Reversed'
                               : 'Withdrawal Request'
                           : tx.description}
@@ -159,7 +159,7 @@ export function WalletPage() {
                     <p className={`text-sm font-bold ${positive ? 'text-accent-400' : 'text-danger-400'}`}>
                       {formatSignedCoins(tx.amount)}
                     </p>
-                    <span className="text-xs capitalize text-ink-400">{tx.status === 'completed' ? 'Success' : tx.status === 'paid' ? 'Success' : tx.status}</span>
+                    <span className="text-xs capitalize text-ink-400">{(tx.status as string) === 'completed' || (tx.status as string) === 'paid' ? 'Success' : tx.status}</span>
                   </div>
                 </div>
               );

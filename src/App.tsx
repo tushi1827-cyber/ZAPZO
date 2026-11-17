@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { ProtectedRoute, AdminRoute, AdminPermissionRoute } from '@/components/ProtectedRoute';
@@ -25,7 +25,6 @@ const WithdrawPage = lazy(() => import('@/pages/dashboard/WithdrawPage').then(m 
 const ProfilePage = lazy(() => import('@/pages/dashboard/ProfilePage').then(m => ({ default: m.ProfilePage })));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
-const DashboardFeedbackPage = lazy(() => import('@/pages/dashboard/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
 const OffersPage = lazy(() => import('@/pages/dashboard/OffersPage').then(m => ({ default: m.OffersPage })));
 const TicketDetailPage = lazy(() => import('@/pages/dashboard/TicketDetailPage').then(m => ({ default: m.TicketDetailPage })));
 
@@ -104,7 +103,7 @@ export default function App() {
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="support" element={<DashboardSupportPage />} />
                 <Route path="support/:id" element={<TicketDetailPage />} />
-                <Route path="feedback" element={<DashboardFeedbackPage />} />
+                <Route path="feedback" element={<Navigate to="/dashboard/support?tab=feedback" replace />} />
                 <Route path="offers" element={<OffersPage />} />
               </Route>
 

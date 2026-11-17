@@ -1,120 +1,42 @@
-import { useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, ClipboardList, Wallet, Users, ArrowDownToLine,
-  Menu, X, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
-  CheckCircle2, XCircle, Banknote, Clock, Gift, Send, Sparkles,
-  CheckCheck, ExternalLink, LifeBuoy, MessageCircle, MessageSquare,
-  Headset, ShieldAlert, KeyRound,
+  LayoutDashboard, ClipboardList, Wallet, Users,
+  Menu, LogOut, Shield, Zap, Ban, Settings as SettingsIcon, Bell, FileCheck,
+  LifeBuoy, MessageCircle, MessageSquare, Sparkles,
+  ShieldAlert, AlertCircle, ChevronDown, ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Logo } from '@/components/Logo';
-import { supabase } from '@/lib/supabase';
 import {
-  fetchNotifications,
   fetchUnreadCount,
-  markNotificationRead,
-  markAllNotificationsRead,
 } from '@/lib/notificationsApi';
-import { Notification } from '@/types';
 
-const navItems = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
+
+const mainNav: NavItem[] = [
   { to: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { to: '/dashboard/tasks', label: 'Browse Tasks', icon: ClipboardList },
   { to: '/dashboard/offers', label: 'Earn with Offers', icon: Sparkles },
   { to: '/dashboard/submissions', label: 'My Submissions', icon: FileCheck },
-  { to: '/dashboard/wallet', label: 'Wallet', icon: Wallet },
+  { to: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
-  { to: '/dashboard/withdraw', label: 'Withdraw', icon: ArrowDownToLine },
   { to: '/dashboard/profile', label: 'Profile', icon: SettingsIcon },
-  { to: '/dashboard/support', label: 'Help & Support', icon: LifeBuoy },
-  { to: '/dashboard/feedback', label: 'Feedback & Reports', icon: MessageSquare },
-  { to: '/dashboard/notifications', label: 'Notifications', icon: Bell },
 ];
 
-const typeIcon: Record<string, typeof Bell> = {
-  task_submitted: Send,
-  task_approved: CheckCircle2,
-  task_rejected: XCircle,
-  submission_approved: CheckCircle2,
-  submission_rejected: XCircle,
-  reward_received: Sparkles,
-  withdrawal_requested: ArrowDownToLine,
-  withdrawal_processing: Clock,
-  withdrawal_paid: Banknote,
-  withdrawal_rejected: XCircle,
-  gift_card_fulfilled: Gift,
-  referral_reward: Users,
-  referral_qualified: Users,
-  wallet_adjustment: Wallet,
-  support_reply: MessageCircle,
-  ticket_status_changed: LifeBuoy,
-  feedback_received: MessageSquare,
-  feedback_status_changed: MessageSquare,
-  admin_withdrawal_requested: ArrowDownToLine,
-  admin_submission_pending: FileCheck,
-  admin_support_reply: Headset,
-  admin_risk_alert: ShieldAlert,
-  admin_role_changed: KeyRound,
-  success: CheckCircle2,
-  danger: XCircle,
-};
+type HelpSubItem = { to: string; label: string; icon: typeof LifeBuoy; match: string };
 
-const toneBg: Record<string, string> = {
-  success: 'bg-accent-400/10 text-accent-400',
-  danger: 'bg-danger-500/10 text-danger-400',
-  warning: 'bg-warning-500/15 text-warning-400',
-  brand: 'bg-brand-600/15 text-brand-400',
-  info: 'bg-brand-600/10 text-brand-400',
-};
+const helpSubNav: HelpSubItem[] = [
+  { to: '/dashboard/support', label: 'Contact Support', icon: MessageCircle, match: '/dashboard/support' },
+  { to: '/dashboard/support?tab=complaint', label: 'Raise a Complaint', icon: ShieldAlert, match: '/dashboard/support?tab=complaint' },
+  { to: '/dashboard/support?tab=problem', label: 'Report a Problem', icon: AlertCircle, match: '/dashboard/support?tab=problem' },
+  { to: '/dashboard/support?tab=feedback', label: 'Send Feedback', icon: MessageSquare, match: '/dashboard/support?tab=feedback' },
+  { to: '/dashboard/support?tab=tickets', label: 'My Support Tickets', icon: LifeBuoy, match: '/dashboard/support?tab=tickets' },
+];
 
-const typeTone: Record<string, string> = {
-  task_submitted: 'info',
-  task_approved: 'success',
-  task_rejected: 'danger',
-  submission_approved: 'success',
-  submission_rejected: 'danger',
-  reward_received: 'success',
-  withdrawal_requested: 'info',
-  withdrawal_processing: 'warning',
-  withdrawal_paid: 'success',
-  withdrawal_rejected: 'danger',
-  gift_card_fulfilled: 'brand',
-  referral_reward: 'brand',
-  referral_qualified: 'brand',
-  wallet_adjustment: 'info',
-  support_reply: 'brand',
-  ticket_status_changed: 'info',
-  feedback_received: 'brand',
-  feedback_status_changed: 'info',
-  admin_withdrawal_requested: 'warning',
-  admin_submission_pending: 'info',
-  admin_support_reply: 'brand',
-  admin_risk_alert: 'danger',
-  admin_role_changed: 'info',
-  success: 'success',
-  danger: 'danger',
-};
-
-function timeAgo(date: string): string {
-  const diff = Date.now() - new Date(date).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(date).toLocaleDateString('en-IN', { dateStyle: 'medium' });
-}
-
-function NotificationBell({ profileId }: { profileId: string }) {
-  const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [markingAll, setMarkingAll] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const fetchUnread = useCallback(async () => {
     try {
@@ -125,166 +47,29 @@ function NotificationBell({ profileId }: { profileId: string }) {
     }
   }, []);
 
-  const fetchRecent = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await fetchNotifications(8);
-      setNotifications(data);
-    } catch {
-      setNotifications([]);
-    }
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
     fetchUnread();
-    const interval = setInterval(() => {
-      fetchUnread();
-      if (open) fetchRecent();
-    }, 30000);
+    const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
-  }, [fetchUnread, fetchRecent, open]);
+  }, [fetchUnread]);
 
-  useEffect(() => {
-    if (open) fetchRecent();
-  }, [open, fetchRecent]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    if (open) document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
-
-  const markAllRead = async () => {
-    const unread = notifications.filter((n) => !n.is_read);
-    if (unread.length === 0) return;
-    setMarkingAll(true);
-    try {
-      await markAllNotificationsRead();
-    } catch {
-      setMarkingAll(false);
-      return;
-    }
-    setMarkingAll(false);
-    await fetchRecent();
-    await fetchUnread();
-  };
-
-  const markRead = async (id: string) => {
-    try {
-      await markNotificationRead(id);
-    } catch {
-      return;
-    }
-    await fetchRecent();
-    await fetchUnread();
+  const handleClick = () => {
+    navigate('/dashboard/notifications');
   };
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="relative rounded-lg p-2 text-ink-400 transition hover:bg-ink-800 hover:text-white"
-        aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
-      >
-        <Bell className="h-5 w-5" />
-        {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl border border-ink-200 bg-ink-900 shadow-2xl z-50 animate-slide-up">
-          <div className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
-            <p className="font-semibold text-white">Notifications</p>
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                disabled={markingAll}
-                className="flex items-center gap-1 text-xs font-medium text-brand-400 transition hover:text-brand-300 disabled:opacity-40"
-              >
-                <CheckCheck className="h-3.5 w-3.5" /> Mark all read
-              </button>
-            )}
-          </div>
-
-          <div className="max-h-96 overflow-y-auto">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-600 border-t-transparent" />
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <Bell className="mx-auto mb-2 h-8 w-8 text-ink-400" />
-                <p className="text-sm text-ink-400">No notifications yet</p>
-              </div>
-            ) : (
-              <div className="py-1">
-                {notifications.map((n) => {
-                  const Icon = typeIcon[n.type] || Bell;
-                  const tone = typeTone[n.type] || 'info';
-                  return (
-                    <div
-                      key={n.id}
-                      className={`flex items-start gap-3 px-3 py-2.5 transition hover:bg-ink-800/50 ${!n.is_read ? 'bg-brand-600/5' : ''}`}
-                    >
-                      <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${toneBg[tone] || 'bg-ink-800 text-ink-400'}`}>
-                        <Icon className="h-4 w-4" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <p className="truncate text-sm font-medium text-white">{n.title}</p>
-                          {!n.is_read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />}
-                        </div>
-                        {n.body && <p className="mt-0.5 line-clamp-2 text-xs text-ink-400">{n.body}</p>}
-                        <p className="mt-0.5 text-[11px] text-ink-400">{timeAgo(n.created_at)}</p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-0.5">
-                        {n.link && (
-                          <Link
-                            to={n.link}
-                            onClick={() => { if (!n.is_read) markRead(n.id); setOpen(false); }}
-                            className="rounded-md p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white"
-                            title="Open"
-                          >
-                            <ExternalLink className="h-3.5 w-3.5" />
-                          </Link>
-                        )}
-                        {!n.is_read && (
-                          <button
-                            onClick={() => markRead(n.id)}
-                            className="rounded-md p-1.5 text-ink-400 transition hover:bg-ink-800 hover:text-white"
-                            title="Mark read"
-                          >
-                            <CheckCheck className="h-3.5 w-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="border-t border-ink-200 px-4 py-2.5">
-            <Link
-              to="/dashboard/notifications"
-              onClick={() => setOpen(false)}
-              className="block text-center text-sm font-medium text-brand-400 transition hover:text-brand-300"
-            >
-              View all notifications
-            </Link>
-          </div>
-        </div>
+    <button
+      onClick={handleClick}
+      className="relative rounded-lg p-2 text-ink-400 transition hover:bg-ink-800 hover:text-white"
+      aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+    >
+      <Bell className="h-5 w-5" />
+      {unreadCount > 0 && (
+        <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
       )}
-    </div>
+    </button>
   );
 }
 
@@ -301,13 +86,20 @@ export function DashboardLayout() {
     navigate('/');
   };
 
-  const NavContent = () => (
+  const NavContent = () => {
+    const [helpOpen, setHelpOpen] = useState(
+      location.pathname === '/dashboard/support' || location.pathname === '/dashboard/feedback'
+    );
+    const helpActive = location.pathname === '/dashboard/support' || location.pathname === '/dashboard/feedback';
+
+    return (
     <div className="flex h-full flex-col">
       <div className="px-4 py-5">
         <Logo size="sm" />
       </div>
-      <nav className="flex-1 space-y-1 px-3">
-        {navItems.map((item) => {
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3">
+        <p className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-ink-400">Main</p>
+        {mainNav.map((item) => {
           const active = location.pathname === item.to;
           return (
             <Link
@@ -325,6 +117,45 @@ export function DashboardLayout() {
             </Link>
           );
         })}
+
+        <div className="my-2 h-px bg-ink-200/50" />
+
+        {/* Help & Support section */}
+        <button
+          onClick={() => setHelpOpen((v) => !v)}
+          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+            helpActive
+              ? 'text-white'
+              : 'text-ink-400 hover:bg-ink-800 hover:text-white'
+          }`}
+        >
+          <LifeBuoy className="h-5 w-5" />
+          <span className="flex-1 text-left">Help &amp; Support</span>
+          {helpOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </button>
+        {helpOpen && (
+          <div className="space-y-0.5 pl-3">
+            {helpSubNav.map((item) => {
+              const active = location.pathname === '/dashboard/support' && location.search === item.match.replace('/dashboard/support', '');
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition ${
+                    active
+                      ? 'bg-brand-600/15 text-brand-400 font-medium'
+                      : 'text-ink-400 hover:bg-ink-800 hover:text-white'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
         {isAdmin && (
           <>
             <div className="my-3 h-px bg-ink-200" />
@@ -354,7 +185,8 @@ export function DashboardLayout() {
         </button>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-ink-950">
@@ -381,12 +213,12 @@ export function DashboardLayout() {
             <Menu className="h-5 w-5" />
           </button>
           <Logo size="sm" />
-          {profile && <NotificationBell profileId={profile.id} />}
+          {profile && <NotificationBell />}
         </div>
 
         {/* Desktop top bar */}
         <div className="sticky top-0 z-20 hidden items-center justify-end border-b border-ink-200 bg-ink-950/80 px-6 py-3 backdrop-blur-lg lg:flex">
-          {profile && <NotificationBell profileId={profile.id} />}
+          {profile && <NotificationBell />}
         </div>
 
         {isSuspended && (
