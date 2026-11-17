@@ -145,9 +145,7 @@ export function AdminEmailTestPage() {
       } else {
         setResult({
           type: 'success',
-          message: response.status === 202
-            ? `Email queued and will be retried automatically. Queue ID: ${data.id}`
-            : `Email sent successfully. Queue ID: ${data.id}`,
+          message: `Email queued for delivery. It will be sent by the queue processor shortly. Queue ID: ${data.id}`,
         });
       }
     } catch {

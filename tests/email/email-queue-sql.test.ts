@@ -13,12 +13,14 @@ import { classifyResendStatus } from "../../supabase/functions/_shared/email-del
 
 const baseSchema = readFileSync(new URL("./base-schema.sql", import.meta.url), "utf8");
 const migration = readFileSync(new URL("./email_queue_reliability.sql", import.meta.url), "utf8");
+const security = readFileSync(new URL("./email_queue_security.sql", import.meta.url), "utf8");
 
 async function withDb(run: (db: PGlite) => Promise<void>): Promise<void> {
   const db = new PGlite();
   try {
     await db.exec(baseSchema);
     await db.exec(migration);
+    await db.exec(security);
     await run(db);
   } finally {
     await db.close();
@@ -206,8 +208,7 @@ describe("email queue retry and ownership", () => {
       const stale = await claimOrFail(client, id);
 
       await db.query(`UPDATE public.email_queue SET claimed_at = now() - interval '10 minutes' WHERE id = $1`, [id]);
-      const requeued = await db.query<{ r: number }>(`SELECT public.requeue_stale_email_queue() AS r`);
-      assert.equal(requeued.rows[0].r, 1);
+      await db.query(`SELECT public.requeue_stale_email_queue()`);
       assert.equal((await rowState(db, id)).status, "pending");
 
       assert.equal(await markSentReturns(client, stale), false);
@@ -287,12 +288,12 @@ describe("email queue claiming", () => {
   it("batch claims never return the same row twice", async () => {
     await withDb(async (db) => {
       for (let i = 0; i < 3; i++) await enqueue(db);
-      const first = await db.query<{ r: Array<{ id: string }> }>(`SELECT public.claim_email_queue_batch(10) AS r`);
-      const second = await db.query<{ r: Array<{ id: string }> }>(`SELECT public.claim_email_queue_batch(10) AS r`);
-      const ids = [...first.rows[0].r, ...second.rows[0].r].map((r) => r.id);
+      const first = await db.query<{ id: string }>(`SELECT * FROM public.claim_email_queue_batch(10)`);
+      const second = await db.query<{ id: string }>(`SELECT * FROM public.claim_email_queue_batch(10)`);
+      const ids = [...first.rows, ...second.rows].map((r) => r.id);
       assert.equal(ids.length, 3);
       assert.equal(new Set(ids).size, 3);
-      assert.equal(second.rows[0].r.length, 0);
+      assert.equal(second.rows.length, 0);
     });
   });
 
@@ -300,8 +301,8 @@ describe("email queue claiming", () => {
     await withDb(async (db) => {
       const id = (await enqueue(db))!;
       await db.query(`UPDATE public.email_queue SET attempts = 5 WHERE id = $1`, [id]);
-      const res = await db.query<{ r: unknown[] }>(`SELECT public.claim_email_queue_batch(10) AS r`);
-      assert.equal(res.rows[0].r.length, 0);
+      const res = await db.query(`SELECT * FROM public.claim_email_queue_batch(10)`);
+      assert.equal(res.rows.length, 0);
     });
   });
 });

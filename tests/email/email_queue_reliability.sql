@@ -1,15 +1,12 @@
--- Email queue reliability: database-enforced retry delays, attempt cap,
--- claim ownership tokens, and single-row claiming for send-email.
--- Additive only: no rows are deleted, no existing function signature changes,
--- and enqueue_email / notification dedup keys are untouched.
+-- Email queue reliability (corrected). Preserves verified production signatures:
+--   claim_email_queue_batch(integer)  RETURNS SETOF public.email_queue
+--   requeue_stale_email_queue()       RETURNS void
+-- Apply after the baseline, then email_queue_security.sql.
+-- Does not drop functions, does not delete rows, does not touch enqueue_email.
 
 ALTER TABLE public.email_queue
   ADD COLUMN IF NOT EXISTS next_attempt_at timestamptz NOT NULL DEFAULT now(),
   ADD COLUMN IF NOT EXISTS claim_token uuid;
-
-CREATE INDEX IF NOT EXISTS idx_email_queue_due
-  ON public.email_queue (next_attempt_at, created_at)
-  WHERE status = 'pending';
 
 CREATE OR REPLACE FUNCTION public.email_queue_backoff(p_attempts integer)
 RETURNS interval
@@ -26,54 +23,31 @@ AS $$
 $$;
 
 CREATE OR REPLACE FUNCTION public.claim_email_queue_batch(p_max integer DEFAULT 10)
-RETURNS jsonb
+RETURNS SETOF public.email_queue
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
-DECLARE
-  v_result jsonb;
 BEGIN
+  RETURN QUERY
   WITH claimed AS (
-    SELECT id
-    FROM public.email_queue
-    WHERE status = 'pending'
-      AND attempts < 5
-      AND next_attempt_at <= now()
-    ORDER BY next_attempt_at, created_at
+    SELECT q.id
+    FROM public.email_queue q
+    WHERE q.status = 'pending'
+      AND q.attempts < 5
+      AND q.next_attempt_at <= now()
+    ORDER BY q.next_attempt_at, q.created_at
     FOR UPDATE SKIP LOCKED
     LIMIT LEAST(GREATEST(p_max, 1), 50)
-  ),
-  updated AS (
-    UPDATE public.email_queue eq
-    SET status = 'processing',
-        claimed_at = now(),
-        claim_token = gen_random_uuid(),
-        attempts = eq.attempts + 1
-    FROM claimed
-    WHERE eq.id = claimed.id
-    RETURNING eq.id, eq.recipient_email, eq.template_name, eq.subject,
-              eq.payload, eq.attempts, eq.claim_token
   )
-  SELECT COALESCE(
-    jsonb_agg(
-      jsonb_build_object(
-        'id', id,
-        'recipient_email', recipient_email,
-        'template_name', template_name,
-        'subject', subject,
-        'payload', payload,
-        'attempts', attempts,
-        'claim_token', claim_token
-      )
-      ORDER BY id
-    ),
-    '[]'::jsonb
-  )
-  INTO v_result
-  FROM updated;
-
-  RETURN v_result;
+  UPDATE public.email_queue eq
+  SET status = 'processing',
+      claimed_at = now(),
+      claim_token = gen_random_uuid(),
+      attempts = eq.attempts + 1
+  FROM claimed
+  WHERE eq.id = claimed.id
+  RETURNING eq.*;
 END;
 $$;
 
@@ -143,8 +117,6 @@ BEGIN
 END;
 $$;
 
--- p_outcome: 'retry' counts the attempt and backs off; 'permanent' fails now;
--- 'config' refunds the attempt because the problem is ours, not the email's.
 CREATE OR REPLACE FUNCTION public.release_email_queue_row(
   p_id uuid,
   p_claim_token uuid,
@@ -213,15 +185,11 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION public.requeue_stale_email_queue()
-RETURNS integer
+RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
-DECLARE
-  v_requeued integer := 0;
-  v_failed integer := 0;
-  v_legacy integer := 0;
 BEGIN
   UPDATE public.email_queue
   SET status = 'failed',
@@ -231,7 +199,6 @@ BEGIN
   WHERE status = 'processing'
     AND claimed_at < now() - interval '5 minutes'
     AND attempts >= 5;
-  GET DIAGNOSTICS v_failed = ROW_COUNT;
 
   UPDATE public.email_queue
   SET status = 'pending',
@@ -242,7 +209,6 @@ BEGIN
   WHERE status = 'processing'
     AND claimed_at < now() - interval '5 minutes'
     AND attempts < 5;
-  GET DIAGNOSTICS v_requeued = ROW_COUNT;
 
   UPDATE public.email_queue
   SET status = 'failed',
@@ -250,21 +216,16 @@ BEGIN
       last_error = COALESCE(last_error, 'Max retry attempts exceeded')
   WHERE status = 'pending'
     AND attempts >= 5;
-  GET DIAGNOSTICS v_legacy = ROW_COUNT;
-
-  RETURN v_requeued + v_failed + v_legacy;
 END;
 $$;
 
 REVOKE ALL ON FUNCTION public.email_queue_backoff(integer) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.claim_email_queue_batch(integer) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.claim_email_queue_row(uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.mark_email_queue_row_sent(uuid, uuid) FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.release_email_queue_row(uuid, uuid, text, text) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.requeue_stale_email_queue() FROM PUBLIC, anon, authenticated;
 
-GRANT EXECUTE ON FUNCTION public.claim_email_queue_batch(integer) TO service_role;
 GRANT EXECUTE ON FUNCTION public.claim_email_queue_row(uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.mark_email_queue_row_sent(uuid, uuid) TO service_role;
 GRANT EXECUTE ON FUNCTION public.release_email_queue_row(uuid, uuid, text, text) TO service_role;
-GRANT EXECUTE ON FUNCTION public.requeue_stale_email_queue() TO service_role;
+
+NOTIFY pgrst, 'reload schema';

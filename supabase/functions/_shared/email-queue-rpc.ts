@@ -18,25 +18,25 @@ export type ClaimedRow = {
 
 export type FailedOutcome = Exclude<SendOutcome["kind"], "sent">;
 
+export type QueueWriteResult = { ok: true } | { ok: false; error: string };
+
 export async function claimEmailQueueRow(client: RpcClient, id: string): Promise<ClaimedRow | null> {
   const { data, error } = await client.rpc("claim_email_queue_row", { p_id: id });
-  if (error) {
-    console.error("claim_email_queue_row failed:", id, error.message);
-    return null;
-  }
+  if (error) throw new Error(`claim_email_queue_row failed: ${error.message}`);
   return (data as ClaimedRow | null) ?? null;
 }
 
 export async function markEmailQueueRowSent(
   client: RpcClient,
   row: Pick<ClaimedRow, "id" | "claim_token">,
-): Promise<void> {
+): Promise<QueueWriteResult> {
   const { data, error } = await client.rpc("mark_email_queue_row_sent", {
     p_id: row.id,
     p_claim_token: row.claim_token,
   });
-  if (error) console.error("mark_email_queue_row_sent failed:", row.id, error.message);
-  else if (data !== true) console.error("Lost claim before marking sent:", row.id);
+  if (error) return { ok: false, error: error.message };
+  if (data !== true) return { ok: false, error: "Claim was no longer owned by this worker" };
+  return { ok: true };
 }
 
 export async function releaseEmailQueueRow(
@@ -44,13 +44,14 @@ export async function releaseEmailQueueRow(
   row: Pick<ClaimedRow, "id" | "claim_token">,
   outcome: FailedOutcome,
   message: string,
-): Promise<void> {
+): Promise<QueueWriteResult> {
   const { data, error } = await client.rpc("release_email_queue_row", {
     p_id: row.id,
     p_claim_token: row.claim_token,
     p_outcome: outcome,
     p_error: message,
   });
-  if (error) console.error("release_email_queue_row failed:", row.id, error.message);
-  else if (data === "not_owner") console.error("Lost claim before release:", row.id);
+  if (error) return { ok: false, error: error.message };
+  if (data === "not_owner") return { ok: false, error: "Claim was no longer owned by this worker" };
+  return { ok: true };
 }

@@ -44,8 +44,8 @@ async function claimOne(c: pg.Client, id: string): Promise<ClaimedRow | null> {
 }
 
 async function claimBatch(c: pg.Client, max = 50): Promise<ClaimedRow[]> {
-  const res = await c.query<{ r: ClaimedRow[] }>(`SELECT public.claim_email_queue_batch($1) AS r`, [max]);
-  return res.rows[0].r;
+  const res = await c.query<ClaimedRow>(`SELECT * FROM public.claim_email_queue_batch($1)`, [max]);
+  return res.rows;
 }
 
 async function markSent(c: pg.Client, row: ClaimedRow): Promise<boolean> {
@@ -66,9 +66,8 @@ async function release(
   return res.rows[0].r;
 }
 
-async function requeueStale(c: pg.Client): Promise<number> {
-  const res = await c.query<{ r: number }>(`SELECT public.requeue_stale_email_queue() AS r`);
-  return res.rows[0].r;
+async function requeueStale(c: pg.Client): Promise<void> {
+  await c.query(`SELECT public.requeue_stale_email_queue()`);
 }
 
 async function makeDue(c: pg.Client, id: string): Promise<void> {
@@ -171,8 +170,8 @@ describe("PostgreSQL email queue concurrency", () => {
       const stale = (await claimOne(w.a, id))!;
       await ageClaim(w.a, id);
 
-      assert.ok((await requeueStale(w.b)) >= 1);
-      const fresh = (await claimOne(w.b, id))!;
+      await requeueStale(w.b);
+      const fresh = (await claimOne(w.b, id))!;;
       assert.equal(fresh.attempts, 2, "recovery must keep the attempt count");
 
       assert.equal(await markSent(w.a, stale), false);
@@ -278,14 +277,14 @@ describe("PostgreSQL email queue concurrency", () => {
       await claimOne(w.a, id);
       await ageClaim(w.a, id);
 
-      const [requeued, batch] = await Promise.all([requeueStale(w.a), claimBatch(w.b)]);
-      assert.equal(requeued, 1);
+      const [, batch] = await Promise.all([requeueStale(w.a), claimBatch(w.b)]);
       const state = await rowState(w.a, id);
       if (batch.length === 1) {
         assert.equal(state.status, "processing");
         assert.equal(state.claim_token, batch[0].claim_token);
         assert.equal(state.attempts, 2);
       } else {
+        assert.equal(batch.length, 0);
         assert.equal(state.status, "pending");
         assert.equal(state.claim_token, null);
       }

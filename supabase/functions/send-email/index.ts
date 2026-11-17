@@ -1,10 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
-import { EMAIL_SENDER, sendViaResend } from "../_shared/email-delivery.ts";
-import {
-  claimEmailQueueRow,
-  markEmailQueueRowSent,
-  releaseEmailQueueRow,
-} from "../_shared/email-queue-rpc.ts";
 import { EMAIL_TEMPLATES, isTemplateName, renderEmail } from "../_shared/email-templates.ts";
 
 const corsHeaders = {
@@ -13,7 +7,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -65,10 +58,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    if (!RESEND_API_KEY) {
-      return json({ error: "Email service not configured" }, 503);
-    }
-
     if (req.method !== "POST") {
       return json({ error: "Method not allowed" }, 405);
     }
@@ -108,39 +97,10 @@ Deno.serve(async (req: Request) => {
       .single();
 
     if (queueError || !queueRow) {
-      return json({ error: "Failed to enqueue email" }, 500);
+      return json({ error: "Failed to queue email" }, 500);
     }
 
-    const claimed = await claimEmailQueueRow(supabase, queueRow.id);
-    if (!claimed) {
-      return json({ success: true, message: "Email queued", id: queueRow.id }, 202);
-    }
-
-    const outcome = await sendViaResend({
-      apiKey: RESEND_API_KEY,
-      idempotencyKey: queueRow.id,
-      from: EMAIL_SENDER,
-      to: body.to,
-      subject: finalSubject,
-      html: rendered.html,
-    });
-
-    if (outcome.kind === "sent") {
-      await markEmailQueueRowSent(supabase, claimed);
-      return json({ success: true, message: "Email sent", id: queueRow.id }, 200);
-    }
-
-    await releaseEmailQueueRow(supabase, claimed, outcome.kind, outcome.message);
-
-    if (outcome.kind === "retry") {
-      return json({ success: true, message: "Email queued for retry", id: queueRow.id }, 202);
-    }
-
-    if (outcome.kind === "config") {
-      return json({ error: "Email service is misconfigured: Resend rejected the API key", details: outcome.message }, 503);
-    }
-
-    return json({ error: "Failed to send email", details: outcome.message }, 502);
+    return json({ success: true, queued: true, status: "pending", id: queueRow.id }, 202);
   } catch {
     return json({ error: "Internal server error" }, 500);
   }

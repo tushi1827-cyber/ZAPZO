@@ -7,11 +7,11 @@
     },
     "process-email-queue": {
       "hasChanged": false,
-      "hash": "0366cdf5da4e1a52773c40221f913a4ed9aec5e24c6b3005c14fde0ff6ad63f4d9bb913b9a7ca76eb27e690d3a3a09eb82227baddb7aaa0cac2a2a101b34b9e4"
+      "hash": "2f69d9d237d41d0e79e450d71913c075ef4a7af4dc3c15de74d140210404945a41929442f3b7e100a5007bcb18f88b7dbe0b21ff11e3836f8c47885075d77d63"
     },
     "send-email": {
       "hasChanged": false,
-      "hash": "798de1b7afd18e794624ede0d8cd88658116d23244eb39d7ad24e9d6da0da7d4d9bb913b9a7ca76eb27e690d3a3a09eb82227baddb7aaa0cac2a2a101b34b9e4"
+      "hash": "74a7ef9efa553900174db730a38a79e69ca874e138e35c5e61e962d469bea6c441929442f3b7e100a5007bcb18f88b7dbe0b21ff11e3836f8c47885075d77d63"
     },
     "submit-task": {
       "hasChanged": false,
