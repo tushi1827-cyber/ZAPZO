@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import upiLogoUrl from '@/assets/upi-logo.svg';
 import {
   ArrowDownToLine, Wallet, CheckCircle2, AlertCircle, Clock,
   Info, Gift, Mail, Check,
@@ -336,14 +337,30 @@ export function WithdrawPage() {
                       <div
                         role="img"
                         aria-label={`${opt.label} payment method visual`}
-                        className="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-ink-950/60 sm:h-28 lg:h-24"
-                        style={{
-                          backgroundImage: 'url(/image.png)',
-                          backgroundPosition: opt.visualPosition,
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: '500% 100%',
-                        }}
-                      />
+                        className="h-24 w-full shrink-0 overflow-hidden rounded-xl sm:h-28 lg:h-24 ${
+                          opt.value === 'upi' ? 'grid place-items-center bg-ink-800/60' : 'bg-ink-950/60'
+                        }"
+                        style={
+                          opt.value === 'upi'
+                            ? undefined
+                            : {
+                                backgroundImage: 'url(/image.png)',
+                                backgroundPosition: opt.visualPosition,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundSize: '500% 100%',
+                              }
+                        }
+                      >
+                        {opt.value === 'upi' && (
+                          <img
+                            src={upiLogoUrl}
+                            alt=""
+                            width={80}
+                            height={28}
+                            className="h-auto w-[80px] max-w-full"
+                          />
+                        )}
+                      </div>
                       <div className="min-w-0">
                         <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
                         <p className="mt-0.5 text-xs leading-5 text-ink-400">{opt.description}</p>
