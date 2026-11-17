@@ -1,21 +1,16 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import upiLogoUrl from '@/assets/upi-logo.svg';
 import {
-  ArrowDownToLine, Wallet, CheckCircle2, AlertCircle, Clock,
-  Info, Gift, Mail, Check,
+  ArrowDownToLine, CheckCircle2, AlertCircle, Clock,
+  Info, Gift, Mail, Check, Landmark,
 } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { AmazonLogo, FlipkartLogo, GooglePlayLogo } from '@/components/PaymentMethodIcons';
 import { Spinner, EmptyState } from '@/components/ui/Feedback';
-import { StatusBadge } from '@/components/ui/Badge';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { Withdrawal, WithdrawalMethod, Settings, GiftCardDenomination } from '@/types';
 import { formatCoins, formatInr, CONVERSION_HINT } from '@/lib/format';
-
-const UPI_BASIC_REGEX = /^[a-zA-Z0-9.\-_]{2,}@[a-zA-Z][a-zA-Z0-9.\-_]{1,}$/;
 
 const EMAIL_DOMAINS = new Set([
   'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.in', 'yahoo.in',
@@ -48,16 +43,15 @@ interface PaymentMethodOption {
   value: WithdrawalMethod;
   label: string;
   description: string;
-  visualPosition: string;
   isGiftCard: boolean;
 }
 
 const PAYMENT_METHODS: PaymentMethodOption[] = [
-  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', visualPosition: '0% center', isGiftCard: false },
-  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', visualPosition: '25% center', isGiftCard: false },
-  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', visualPosition: '50% center', isGiftCard: true },
-  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', visualPosition: '75% center', isGiftCard: true },
-  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', visualPosition: '100% center', isGiftCard: true },
+  { value: 'upi', label: 'UPI', description: 'Instant transfer to any UPI ID', isGiftCard: false },
+  { value: 'bank_transfer', label: 'Bank Transfer', description: 'Direct deposit to your bank account', isGiftCard: false },
+  { value: 'amazon_gift_card', label: 'Amazon Gift Card', description: 'Redeem for Amazon India gift card', isGiftCard: true },
+  { value: 'flipkart_gift_card', label: 'Flipkart Gift Card', description: 'Redeem for Flipkart gift card', isGiftCard: true },
+  { value: 'google_play_gift_card', label: 'Google Play Gift Card', description: 'Redeem for Google Play gift card', isGiftCard: true },
 ];
 
 const GIFT_CARD_PROVIDERS: WithdrawalMethod[] = ['amazon_gift_card', 'flipkart_gift_card', 'google_play_gift_card'];
@@ -69,6 +63,51 @@ function isGiftCardMethod(m: WithdrawalMethod): boolean {
 function methodLabel(m: WithdrawalMethod): string {
   const found = PAYMENT_METHODS.find((p) => p.value === m);
   return found ? found.label : m.replace('_', ' ');
+}
+
+const inputClass = 'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 transition focus:border-success-500 focus:outline-none focus:ring-2 focus:ring-success-500/20 disabled:cursor-not-allowed disabled:opacity-60';
+const labelClass = 'mb-1.5 block text-sm font-medium text-gray-700';
+
+function MethodIcon({ method }: { method: WithdrawalMethod }) {
+  if (method === 'upi') {
+    return <img src={upiLogoUrl} alt="UPI" className="h-7 w-auto" />;
+  }
+  if (method === 'bank_transfer') {
+    return (
+      <span className="grid h-10 w-10 place-items-center rounded-xl bg-success-50 text-success-600 ring-1 ring-success-100">
+        <Landmark className="h-5 w-5" />
+      </span>
+    );
+  }
+  if (method === 'amazon_gift_card') return <AmazonLogo className="h-10 w-10" />;
+  if (method === 'flipkart_gift_card') return <FlipkartLogo className="h-10 w-10" />;
+  return <GooglePlayLogo className="h-10 w-10" />;
+}
+
+function WithdrawStatusBadge({ status }: { status: string }) {
+  const labels: Record<string, string> = {
+    pending: 'Pending',
+    processing: 'Processing',
+    approved: 'Approved',
+    paid: 'Completed',
+    completed: 'Completed',
+    rejected: 'Rejected',
+    reversed: 'Reversed',
+  };
+  const tones: Record<string, string> = {
+    pending: 'bg-amber-50 text-amber-700 ring-amber-200',
+    processing: 'bg-blue-50 text-blue-700 ring-blue-200',
+    approved: 'bg-blue-50 text-blue-700 ring-blue-200',
+    paid: 'bg-green-50 text-green-700 ring-green-200',
+    completed: 'bg-green-50 text-green-700 ring-green-200',
+    rejected: 'bg-red-50 text-red-700 ring-red-200',
+    reversed: 'bg-red-50 text-red-700 ring-red-200',
+  };
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${tones[status] ?? 'bg-gray-50 text-gray-600 ring-gray-200'}`}>
+      {labels[status] ?? status}
+    </span>
+  );
 }
 
 export function WithdrawPage() {
@@ -92,7 +131,7 @@ export function WithdrawPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setError('');
@@ -113,11 +152,11 @@ export function WithdrawPage() {
       .order('value', { ascending: true });
     setDenominations((denoms as GiftCardDenomination[]) || []);
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
     loadData();
-  }, [user]);
+  }, [loadData]);
 
   const minWithdrawal = Number(settings?.min_withdrawal ?? 5);
   const hasPending = withdrawals.some((w) => w.status === 'pending' || w.status === 'processing');
@@ -277,361 +316,366 @@ export function WithdrawPage() {
 
   if (loading) return <Spinner size="lg" className="py-20" />;
 
+  const summaryAmount = isGiftCard
+    ? (selectedDenominationId ? Number(amount) : null)
+    : (amount ? parseFloat(amount) || 0 : null);
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Withdraw</h1>
-        <p className="mt-1 text-sm text-ink-400">Request a payout via UPI, Bank Transfer, or redeem a gift card. <span className="font-medium text-ink-300">{CONVERSION_HINT}</span></p>
-      </div>
+    <div className="animate-fade-in">
+      <div className="overflow-hidden rounded-3xl bg-gradient-to-b from-gray-50 via-white to-gray-50 shadow-sm ring-1 ring-gray-200/70">
+        <div className="space-y-6 p-4 sm:p-6 lg:p-8">
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Withdraw</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Request a payout via UPI, Bank Transfer, or redeem a gift card. <span className="font-medium text-gray-700">{CONVERSION_HINT}</span>
+            </p>
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Withdrawal form */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="font-bold text-white">New Withdrawal</h2>
-              <div className="text-right">
-                <p className="text-xs text-ink-400">Available Balance</p>
-                <p className="text-lg font-bold text-accent-400">{formatCoins(balance)}</p>
-                <p className="text-xs text-ink-400">{formatInr(balance)}</p>
-              </div>
+          {isSuspended && (
+            <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Your account is suspended. Withdrawals are unavailable — contact support if you believe this is an error.
             </div>
+          )}
 
-            {hasPending && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl bg-warning-500/10 p-3 text-sm text-warning-400">
-                <Clock className="h-4 w-4 shrink-0" />
-                You have a pending or processing withdrawal. Please wait for it to complete before requesting another.
-              </div>
-            )}
-
-            {success && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl bg-accent-400/10 p-3 text-sm text-accent-400">
-                <CheckCircle2 className="h-4 w-4 shrink-0" />
-                {success}
-              </div>
-            )}
-
-            {/* Payment Method Selection */}
-            <div className="mt-5">
-              <label className="label">Select Payment Method</label>
-              <div className="mt-3 grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3">
-                {PAYMENT_METHODS.map((opt) => {
-                  const selected = method === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => handleMethodChange(opt.value)}
-                      disabled={hasPending}
-                      className={`group relative flex min-w-0 flex-col items-start gap-2 overflow-hidden rounded-2xl border p-3 text-left transition-all duration-200 sm:gap-3 sm:p-4 ${
-                        selected
-                          ? 'border-brand-500 bg-gradient-to-br from-brand-600/15 to-brand-900/10 ring-1 ring-brand-500/40 shadow-glow-purple'
-                          : 'border-ink-200 bg-ink-800/30 hover:border-brand-500/40 hover:bg-ink-800/50'
-                      } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                    >
-                      {selected && (
-                        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white shadow-glow-purple">
-                          <Check className="h-3 w-3" />
-                        </span>
-                      )}
-                      <div
-                        role="img"
-                        aria-label={`${opt.label} payment method visual`}
-                        className="h-24 w-full shrink-0 overflow-hidden rounded-xl sm:h-28 lg:h-24 ${
-                          opt.value === 'upi' ? 'grid place-items-center bg-ink-800/60' : 'bg-ink-950/60'
-                        }"
-                        style={
-                          opt.value === 'upi'
-                            ? undefined
-                            : {
-                                backgroundImage: 'url(/image.png)',
-                                backgroundPosition: opt.visualPosition,
-                                backgroundRepeat: 'no-repeat',
-                                backgroundSize: '500% 100%',
-                              }
-                        }
-                      >
-                        {opt.value === 'upi' && (
-                          <img
-                            src={upiLogoUrl}
-                            alt=""
-                            width={80}
-                            height={28}
-                            className="h-auto w-[80px] max-w-full"
-                          />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <p className={`text-sm font-semibold ${selected ? 'text-white' : 'text-ink-50'}`}>{opt.label}</p>
-                        <p className="mt-0.5 text-xs leading-5 text-ink-400">{opt.description}</p>
-                      </div>
-                      {opt.isGiftCard && (
-                        <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-accent-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-400">
-                          <Gift className="h-2.5 w-2.5" /> Gift Card
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-              {/* UPI Fields */}
-              {method === 'upi' && (
-                <div>
-                  <Input
-                    label="UPI ID"
-                    type="text"
-                    name="upi_id"
-                    placeholder="name@upi"
-                    value={upiId}
-                    onChange={(e) => handleUpiChange(e.target.value)}
-                    disabled={hasPending}
-                    error={upiError || undefined}
-                    hint={upiError ? undefined : 'Enter your UPI ID (e.g. yourname@oksbi)'}
-                  />
-                  <div className="mt-2 flex items-center gap-2 rounded-lg bg-ink-800/40 px-3 py-2">
-                    <p className="text-xs text-ink-400">Accepted: any valid UPI ID (e.g. name@upi, 9876543210@ybl)</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Bank Transfer Fields */}
-              {method === 'bank_transfer' && (
-                <div className="space-y-4 rounded-xl border border-ink-200 p-4">
-                  <Input
-                    label="Account Holder Name"
-                    type="text"
-                    name="account_holder"
-                    placeholder="Full name as per bank records"
-                    value={accountHolder}
-                    onChange={(e) => setAccountHolder(e.target.value)}
-                    disabled={hasPending}
-                  />
-                  <Input
-                    label="Account Number"
-                    type="text"
-                    name="account_number"
-                    placeholder="Bank account number"
-                    value={accountNumber}
-                    onChange={(e) => setAccountNumber(e.target.value)}
-                    disabled={hasPending}
-                  />
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Input
-                      label="IFSC Code"
-                      type="text"
-                      name="ifsc_code"
-                      placeholder="e.g. HDFC0001234"
-                      value={ifscCode}
-                      onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
-                      disabled={hasPending}
-                    />
-                    <Input
-                      label="Bank Name"
-                      type="text"
-                      name="bank_name"
-                      placeholder="e.g. HDFC Bank"
-                      value={bankName}
-                      onChange={(e) => setBankName(e.target.value)}
-                      disabled={hasPending}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Gift Card Email Field */}
-              {isGiftCard && (
-                <Input
-                  label="Email Address"
-                  type="email"
-                  name="gift_card_email"
-                  placeholder="your@email.com"
-                  value={giftCardEmail}
-                  onChange={(e) => setGiftCardEmail(e.target.value)}
-                  disabled={hasPending}
-                  hint={`The ${methodLabel(method)} will be sent to this email address.`}
-                />
-              )}
-
-              {/* Gift Card Denominations */}
-              {isGiftCard && (
-                <div>
-                  <label className="label">Gift Card Value</label>
-                  <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {availableDenominations.length === 0 ? (
-                      <p className="col-span-full text-sm text-ink-400">No denominations currently available for {methodLabel(method)}.</p>
-                    ) : (
-                      availableDenominations.map((d) => {
-                        const selected = selectedDenominationId === d.id;
-                        const insufficient = d.value > balance;
-                        return (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onClick={() => handleDenominationSelect(d)}
-                            disabled={hasPending || insufficient}
-                            className={`relative rounded-xl border p-4 text-center transition-all ${
-                              selected
-                                ? 'border-brand-500 bg-brand-600/10 ring-1 ring-brand-500/30'
-                                : insufficient
-                                  ? 'cursor-not-allowed border-ink-200 bg-ink-800/20 opacity-40'
-                                  : 'cursor-pointer border-ink-200 bg-ink-800/30 hover:border-ink-300 hover:bg-ink-800/60'
-                            }`}
-                          >
-                            {selected && (
-                              <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
-                                <Check className="h-3 w-3" />
-                              </span>
-                            )}
-                            <p className={`text-lg font-bold ${selected ? 'text-brand-400' : 'text-white'}`}>
-                              {formatCoins(d.value)}
-                            </p>
-                            {insufficient && (
-                              <p className="mt-0.5 text-xs text-danger-400">Insufficient balance</p>
-                            )}
-                          </button>
-                        );
-                      })
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main column */}
+            <div className="space-y-6 lg:col-span-2">
+              {/* Balance card */}
+              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-success-600 via-success-500 to-success-600 p-5 text-white shadow-md sm:p-6">
+                <div className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
+                <div className="pointer-events-none absolute -bottom-12 left-1/3 h-32 w-32 rounded-full bg-white/10 blur-2xl" />
+                <div className="relative">
+                  <p className="text-sm font-medium text-white/80">Available Balance</p>
+                  <p className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">{formatCoins(balance)}</p>
+                  <p className="mt-0.5 text-sm text-white/80">{formatInr(balance)}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium ring-1 ring-white/25">
+                      Min withdrawal: {formatCoins(minWithdrawal)}
+                    </span>
+                    <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-xs font-medium ring-1 ring-white/25">
+                      Max per request: {formatCoins(balance)}
+                    </span>
+                    {hasPending && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/25 px-3 py-1 text-xs font-medium ring-1 ring-amber-200/50">
+                        <Clock className="h-3 w-3" /> A request is awaiting review
+                      </span>
                     )}
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* Manual Amount for UPI / Bank Transfer */}
-              {!isGiftCard && (
-                <Input
-                  label="Withdrawal Amount (Coins)"
-                  type="number"
-                  step="0.01"
-                  name="amount"
-                  placeholder={`Min: ${formatCoins(minWithdrawal)}`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  disabled={hasPending || balance < minWithdrawal}
-                  hint={`Minimum withdrawal: ${formatCoins(minWithdrawal)} • Available: ${formatCoins(balance)}`}
-                />
-              )}
+              {/* New withdrawal */}
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70 sm:p-6">
+                <h2 className="font-bold text-gray-900">New Withdrawal</h2>
 
-              {/* Withdrawal Summary */}
-              <div className="rounded-xl border border-ink-200 bg-ink-800/30 p-4">
-                <p className="mb-3 text-sm font-semibold text-ink-50">Withdrawal Summary</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-ink-400">Available Balance</span>
-                    <span className="font-medium text-white">{formatCoins(balance)} · {formatInr(balance)}</span>
+                {hasPending && (
+                  <div className="mt-4 flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                    <Clock className="h-4 w-4 shrink-0" />
+                    You have a pending or processing withdrawal. Please wait for it to complete before requesting another.
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-ink-400">Payment Method</span>
-                    <span className="font-medium text-white">{methodLabel(method)}</span>
+                )}
+
+                {success && (
+                  <div className="mt-4 flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    {success}
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-ink-400">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
-                    <span className="font-medium text-white">
-                      {isGiftCard
-                        ? (selectedDenominationId ? `${formatCoins(Number(amount))} · ${formatInr(Number(amount))}` : '—')
-                        : (amount ? `${formatCoins(parseFloat(amount) || 0)} · ${formatInr(parseFloat(amount) || 0)}` : '—')}
-                    </span>
-                  </div>
-                  <div className="border-t border-ink-200 pt-2 flex justify-between">
-                    <span className="font-semibold text-ink-50">Final Amount</span>
-                    <span className="font-bold text-accent-400">
-                      {isGiftCard
-                        ? (selectedDenominationId ? `${formatCoins(Number(amount))} · ${formatInr(Number(amount))}` : '—')
-                        : (amount ? `${formatCoins(parseFloat(amount) || 0)} · ${formatInr(parseFloat(amount) || 0)}` : '—')}
-                    </span>
+                )}
+
+                {/* Payment method selection */}
+                <div className="mt-5">
+                  <label className={labelClass}>Select Payment Method</label>
+                  <div className="mt-2 grid grid-cols-2 gap-3 min-[420px]:grid-cols-3 lg:grid-cols-5">
+                    {PAYMENT_METHODS.map((opt) => {
+                      const selected = method === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => handleMethodChange(opt.value)}
+                          disabled={hasPending}
+                          className={`relative flex min-w-0 flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all duration-200 ${
+                            selected
+                              ? 'border-success-500 bg-success-50 ring-1 ring-success-500'
+                              : 'border-gray-200 bg-white hover:border-success-400 hover:bg-success-50/40'
+                          } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        >
+                          {selected && (
+                            <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-success-600 text-white">
+                              <Check className="h-3 w-3" />
+                            </span>
+                          )}
+                          <MethodIcon method={opt.value} />
+                          <div className="min-w-0">
+                            <p className={`truncate text-sm font-semibold ${selected ? 'text-gray-900' : 'text-gray-800'}`}>{opt.label}</p>
+                            <p className="mt-0.5 text-xs leading-5 text-gray-500">{opt.description}</p>
+                          </div>
+                          {opt.isGiftCard && (
+                            <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
+                              <Gift className="h-2.5 w-2.5" /> Gift Card
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-              </div>
 
-              {error && <div className="rounded-xl bg-danger-500/10 p-3 text-sm text-danger-400">{error}</div>}
-
-              <Button type="submit" disabled={submitting || !canSubmit || balance < (isGiftCard ? 1 : minWithdrawal)} fullWidth>
-                {submitting ? <Spinner size="sm" /> : <>
-                  {isGiftCard ? <><Gift className="h-4 w-4" /> Redeem Gift Card</> : <><ArrowDownToLine className="h-4 w-4" /> Request Withdrawal</>}
-                </>}
-              </Button>
-
-              {!isGiftCard && balance < minWithdrawal && (
-                <p className="text-center text-xs text-ink-400">
-                  Balance below minimum. <Link to="/dashboard/tasks" className="text-brand-400">Complete tasks</Link> to earn more.
-                </p>
-              )}
-            </form>
-          </Card>
-
-          {/* Withdrawal history */}
-          <Card className="p-5">
-            <h2 className="font-bold text-white">Withdrawal History</h2>
-            {withdrawals.length === 0 ? (
-              <EmptyState icon={<Wallet className="h-10 w-10" />} title="No withdrawals yet" description="Your withdrawal requests will appear here." />
-            ) : (
-              <div className="mt-4 space-y-2">
-                {withdrawals.map((wd) => (
-                  <div key={wd.id} className="flex items-center justify-between rounded-xl border border-ink-200 p-4">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <p className="text-sm font-bold text-danger-400">-{formatCoins(wd.amount)}</p>
-                        <p className="text-xs text-ink-400">
-                          {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
-                        </p>
-                        {wd.rejection_reason && <p className="mt-0.5 text-xs text-danger-400">Rejected: {wd.rejection_reason}</p>}
+                <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+                  {/* UPI fields */}
+                  {method === 'upi' && (
+                    <div>
+                      <label htmlFor="upi_id" className={labelClass}>UPI ID</label>
+                      <input
+                        id="upi_id"
+                        name="upi_id"
+                        type="text"
+                        placeholder="name@upi"
+                        value={upiId}
+                        onChange={(e) => handleUpiChange(e.target.value)}
+                        disabled={hasPending}
+                        className={`${inputClass} ${upiError ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : ''}`}
+                      />
+                      {upiError ? (
+                        <p className="mt-1 text-xs text-red-600">{upiError}</p>
+                      ) : (
+                        <p className="mt-1 text-xs text-gray-500">Enter your UPI ID (e.g. yourname@oksbi)</p>
+                      )}
+                      <div className="mt-2 flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2 ring-1 ring-gray-100">
+                        <p className="text-xs text-gray-500">Accepted: any valid UPI ID (e.g. name@upi, 9876543210@ybl)</p>
                       </div>
                     </div>
-                    <StatusBadge status={wd.status} />
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
-        </div>
+                  )}
 
-        {/* Info sidebar */}
-        <div className="space-y-4">
-          <Card className="p-5">
-            <div className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-brand-400" />
-              <h3 className="font-bold text-white">How withdrawals work</h3>
+                  {/* Bank transfer fields */}
+                  {method === 'bank_transfer' && (
+                    <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+                      <div>
+                        <label htmlFor="account_holder" className={labelClass}>Account Holder Name</label>
+                        <input id="account_holder" name="account_holder" type="text" placeholder="Full name as per bank records" value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} disabled={hasPending} className={inputClass} />
+                      </div>
+                      <div>
+                        <label htmlFor="account_number" className={labelClass}>Account Number</label>
+                        <input id="account_number" name="account_number" type="text" placeholder="Bank account number" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} disabled={hasPending} className={inputClass} />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label htmlFor="ifsc_code" className={labelClass}>IFSC Code</label>
+                          <input id="ifsc_code" name="ifsc_code" type="text" placeholder="e.g. HDFC0001234" value={ifscCode} onChange={(e) => setIfscCode(e.target.value.toUpperCase())} disabled={hasPending} className={inputClass} />
+                        </div>
+                        <div>
+                          <label htmlFor="bank_name" className={labelClass}>Bank Name</label>
+                          <input id="bank_name" name="bank_name" type="text" placeholder="e.g. HDFC Bank" value={bankName} onChange={(e) => setBankName(e.target.value)} disabled={hasPending} className={inputClass} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gift card email */}
+                  {isGiftCard && (
+                    <div>
+                      <label htmlFor="gift_card_email" className={labelClass}>Email Address</label>
+                      <input id="gift_card_email" name="gift_card_email" type="email" placeholder="your@email.com" value={giftCardEmail} onChange={(e) => setGiftCardEmail(e.target.value)} disabled={hasPending} className={inputClass} />
+                      <p className="mt-1 text-xs text-gray-500">The {methodLabel(method)} will be sent to this email address.</p>
+                    </div>
+                  )}
+
+                  {/* Gift card denominations */}
+                  {isGiftCard && (
+                    <div>
+                      <label className={labelClass}>Gift Card Value</label>
+                      <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        {availableDenominations.length === 0 ? (
+                          <p className="col-span-full text-sm text-gray-500">No denominations currently available for {methodLabel(method)}.</p>
+                        ) : (
+                          availableDenominations.map((d) => {
+                            const selected = selectedDenominationId === d.id;
+                            const insufficient = d.value > balance;
+                            return (
+                              <button
+                                key={d.id}
+                                type="button"
+                                onClick={() => handleDenominationSelect(d)}
+                                disabled={hasPending || insufficient}
+                                className={`relative rounded-xl border p-4 text-center transition-all ${
+                                  selected
+                                    ? 'border-success-500 bg-success-50 ring-1 ring-success-500'
+                                    : insufficient
+                                      ? 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-50'
+                                      : 'cursor-pointer border-gray-200 bg-white hover:border-success-400 hover:bg-success-50/40'
+                                }`}
+                              >
+                                {selected && (
+                                  <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-success-600 text-white">
+                                    <Check className="h-3 w-3" />
+                                  </span>
+                                )}
+                                <p className="text-lg font-bold text-gray-900">{formatCoins(d.value)}</p>
+                                {insufficient && <p className="mt-0.5 text-xs text-red-600">Insufficient balance</p>}
+                              </button>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Manual amount for UPI / Bank transfer */}
+                  {!isGiftCard && (
+                    <div>
+                      <label htmlFor="amount" className={labelClass}>Withdrawal Amount (Coins)</label>
+                      <input
+                        id="amount"
+                        name="amount"
+                        type="number"
+                        step="0.01"
+                        placeholder={`Min: ${formatCoins(minWithdrawal)}`}
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        disabled={hasPending || balance < minWithdrawal}
+                        className={inputClass}
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Minimum withdrawal: {formatCoins(minWithdrawal)} • Available: {formatCoins(balance)}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">Withdrawal Summary</p>
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Available Balance</span>
+                        <span className="font-medium text-gray-900">{formatCoins(balance)} · {formatInr(balance)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">Payment Method</span>
+                        <span className="font-medium text-gray-900">{methodLabel(method)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">{isGiftCard ? 'Gift Card Value' : 'Withdrawal Amount'}</span>
+                        <span className="font-medium text-gray-900">
+                          {summaryAmount !== null ? `${formatCoins(summaryAmount)} · ${formatInr(summaryAmount)}` : '—'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-gray-200 pt-2">
+                        <span className="font-semibold text-gray-900">Final Amount</span>
+                        <span className="font-bold text-success-600">
+                          {summaryAmount !== null ? `${formatCoins(summaryAmount)} · ${formatInr(summaryAmount)}` : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={submitting || !canSubmit || balance < (isGiftCard ? 1 : minWithdrawal)}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-success-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-success-500 active:bg-success-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {submitting ? <Spinner size="sm" /> : <>
+                      {isGiftCard ? <><Gift className="h-4 w-4" /> Redeem Gift Card</> : <><ArrowDownToLine className="h-4 w-4" /> Request Withdrawal</>}
+                    </>}
+                  </button>
+
+                  {!isGiftCard && balance < minWithdrawal && (
+                    <p className="text-center text-xs text-gray-500">
+                      Balance below minimum. <Link to="/dashboard/tasks" className="font-medium text-success-600 hover:text-success-500">Complete tasks</Link> to earn more.
+                    </p>
+                  )}
+                </form>
+              </div>
+
+              {/* Withdrawal history */}
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-bold text-gray-900">Withdrawal History</h2>
+                  {withdrawals.length > 0 && (
+                    <span className="text-xs text-gray-400">{withdrawals.length} request{withdrawals.length === 1 ? '' : 's'}</span>
+                  )}
+                </div>
+                {withdrawals.length === 0 ? (
+                  <EmptyState icon={<Landmark className="h-10 w-10 text-gray-300" />} title="No withdrawals yet" description="Your withdrawal requests will appear here." />
+                ) : (
+                  <div className="mt-4 divide-y divide-gray-100">
+                    {withdrawals.map((wd) => (
+                      <div key={wd.id} className="flex items-center justify-between gap-3 py-3.5">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-red-50 text-red-600 ring-1 ring-red-100">
+                            <ArrowDownToLine className="h-4 w-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-gray-900">-{formatCoins(wd.amount)}</p>
+                            <p className="truncate text-xs text-gray-500">
+                              {methodLabel(wd.method)} • {new Date(wd.created_at).toLocaleDateString()}
+                            </p>
+                            {wd.rejection_reason && <p className="mt-0.5 truncate text-xs text-red-600">Rejected: {wd.rejection_reason}</p>}
+                          </div>
+                        </div>
+                        <WithdrawStatusBadge status={wd.status} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-            <ol className="mt-3 space-y-2 text-xs text-ink-400">
-              <li className="flex gap-2"><span className="font-bold text-brand-400">1.</span> Choose a payment method and enter details.</li>
-              <li className="flex gap-2"><span className="font-bold text-brand-400">2.</span> For gift cards, select a denomination.</li>
-              <li className="flex gap-2"><span className="font-bold text-brand-400">3.</span> Funds are reserved in your wallet immediately.</li>
-              <li className="flex gap-2"><span className="font-bold text-brand-400">4.</span> Admin reviews the request.</li>
-              <li className="flex gap-2"><span className="font-bold text-brand-400">5.</span> Approved: payout sent. Rejected: funds released back.</li>
-            </ol>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0 text-warning-400 mt-0.5" />
-              <p className="text-xs text-ink-400">
-                Gift cards are processed manually and sent to your email. Ensure your email is correct before submitting.
-              </p>
+
+            {/* Info sidebar */}
+            <div className="space-y-4">
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-success-600" />
+                  <h3 className="font-bold text-gray-900">How withdrawals work</h3>
+                </div>
+                <ol className="mt-3 space-y-2.5 text-xs text-gray-500">
+                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">1</span> Choose a payment method and enter details.</li>
+                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">2</span> For gift cards, select a denomination.</li>
+                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">3</span> Funds are reserved in your wallet immediately.</li>
+                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">4</span> Admin reviews the request.</li>
+                  <li className="flex gap-2.5"><span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-success-50 text-[10px] font-bold text-success-700 ring-1 ring-success-200">5</span> Approved: payout sent. Rejected: funds released back.</li>
+                </ol>
+              </div>
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                  <p className="text-xs leading-5 text-gray-500">
+                    Gift cards are processed manually and sent to your email. Ensure your email is correct before submitting.
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-success-600" />
+                  <h3 className="font-bold text-gray-900">Withdrawal Policy</h3>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-gray-500">
+                  Before requesting a withdrawal, please review our{' '}
+                  <Link to="/withdrawal-policy" className="font-medium text-success-600 hover:text-success-500">
+                    Withdrawal Policy
+                  </Link>{' '}
+                  for details on eligibility, processing, and important information about payout details.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200/70">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-success-600" />
+                  <h3 className="font-bold text-gray-900">Gift Card Delivery</h3>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-gray-500">
+                  Amazon, Flipkart, and Google Play gift cards are delivered to the email address you provide. Processing typically takes 1-2 business days after approval.
+                </p>
+              </div>
             </div>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center gap-2">
-              <Info className="h-5 w-5 text-brand-400" />
-              <h3 className="font-bold text-white">Withdrawal Policy</h3>
-            </div>
-            <p className="mt-2 text-xs text-ink-400">
-              Before requesting a withdrawal, please review our{' '}
-              <Link to="/withdrawal-policy" className="text-brand-400 font-medium hover:text-brand-300">
-                Withdrawal Policy
-              </Link>{' '}
-              for details on eligibility, processing, and important information about payout details.
-            </p>
-          </Card>
-          <Card className="p-5">
-            <div className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-brand-400" />
-              <h3 className="font-bold text-white">Gift Card Delivery</h3>
-            </div>
-            <p className="mt-2 text-xs text-ink-400">
-              Amazon, Flipkart, and Google Play gift cards are delivered to the email address you provide. Processing typically takes 1-2 business days after approval.
-            </p>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
