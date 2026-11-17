@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, ClipboardList, Wallet, Users,
-  Menu, LogOut, Shield, Zap, Ban, Bell, Sparkles,
-  LifeBuoy, MessageCircle, MessageSquare,
+  LayoutDashboard, Wallet, Users, Home,
+  Menu, LogOut, Shield, Zap, Ban, Bell,
+  LifeBuoy, MessageCircle, Flag,
   ShieldAlert, AlertCircle, ChevronDown, ChevronRight, UserCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -15,8 +15,7 @@ import {
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
 
 const mainNav: NavItem[] = [
-  { to: '/dashboard/tasks', label: 'Tasks', icon: ClipboardList },
-  { to: '/dashboard/offers', label: 'Earn with Offers', icon: Sparkles },
+  { to: '/dashboard/home', label: 'Home', icon: Home },
   { to: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
   { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
@@ -28,7 +27,6 @@ const helpSubNav: HelpSubItem[] = [
   { to: '/dashboard/support', label: 'Contact Support', icon: MessageCircle, match: '/dashboard/support' },
   { to: '/dashboard/support?tab=complaint', label: 'Raise a Complaint', icon: ShieldAlert, match: '/dashboard/support?tab=complaint' },
   { to: '/dashboard/support?tab=problem', label: 'Report a Problem', icon: AlertCircle, match: '/dashboard/support?tab=problem' },
-  { to: '/dashboard/support?tab=feedback', label: 'Send Feedback', icon: MessageSquare, match: '/dashboard/support?tab=feedback' },
   { to: '/dashboard/support?tab=tickets', label: 'My Support Tickets', icon: LifeBuoy, match: '/dashboard/support?tab=tickets' },
 ];
 
@@ -71,6 +69,40 @@ function NotificationBell() {
   );
 }
 
+const bottomNav: NavItem[] = [
+  { to: '/dashboard/home', label: 'Home', icon: Home },
+  { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
+  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
+];
+
+function MobileBottomNav() {
+  const location = useLocation();
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-30 border-t border-ink-200 bg-ink-900/95 backdrop-blur-lg lg:hidden">
+      <div className="mx-auto flex max-w-md items-stretch justify-around">
+        {bottomNav.map((item) => {
+          const active = item.to === '/dashboard/account'
+            ? location.pathname === '/dashboard' || location.pathname === '/dashboard/account'
+            : location.pathname === item.to || (item.to === '/dashboard/home' && location.pathname === '/dashboard');
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition ${
+                active ? 'text-brand-400' : 'text-ink-400'
+              }`}
+            >
+              <item.icon className={`h-5 w-5 ${active ? 'text-brand-400' : 'text-ink-400'}`} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export function DashboardLayout() {
   const { profile, isAdmin, signOut } = useAuth();
   const location = useLocation();
@@ -86,9 +118,10 @@ export function DashboardLayout() {
 
   const NavContent = () => {
     const [helpOpen, setHelpOpen] = useState(
-      location.pathname === '/dashboard/support' || location.pathname === '/dashboard/feedback'
+      location.pathname === '/dashboard/support'
     );
-    const helpActive = location.pathname === '/dashboard/support' || location.pathname === '/dashboard/feedback';
+    const helpActive = location.pathname === '/dashboard/support';
+    const feedbackActive = location.pathname === '/dashboard/feedback';
 
     return (
     <div className="flex h-full flex-col">
@@ -100,7 +133,9 @@ export function DashboardLayout() {
         {mainNav.map((item) => {
           const active = item.to === '/dashboard/account'
             ? location.pathname === '/dashboard' || location.pathname === '/dashboard/account'
-            : location.pathname === item.to;
+            : item.to === '/dashboard/home'
+              ? location.pathname === '/dashboard' || location.pathname === '/dashboard/home'
+              : location.pathname === item.to;
           return (
             <Link
               key={item.to}
@@ -156,6 +191,20 @@ export function DashboardLayout() {
           </div>
         )}
 
+        {/* Feedback & Report */}
+        <Link
+          to="/dashboard/feedback"
+          onClick={() => setOpen(false)}
+          className={`mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+            feedbackActive
+              ? 'bg-brand-600 text-white shadow-glow-purple'
+              : 'text-ink-400 hover:bg-ink-800 hover:text-white'
+          }`}
+        >
+          <Flag className="h-5 w-5" />
+          Feedback &amp; Report
+        </Link>
+
         {isAdmin && (
           <>
             <div className="my-3 h-px bg-ink-200" />
@@ -195,7 +244,7 @@ export function DashboardLayout() {
         <NavContent />
       </aside>
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar (drawer) */}
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-ink-950/80 backdrop-blur-sm" onClick={() => setOpen(false)} />
@@ -228,10 +277,13 @@ export function DashboardLayout() {
           </div>
         )}
 
-        <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <main className="mx-auto max-w-6xl px-4 py-6 pb-24 sm:px-6 sm:py-8 lg:pb-8">
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

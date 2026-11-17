@@ -16,7 +16,7 @@ const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage').th
 
 const DashboardLayout = lazy(() => import('@/components/DashboardLayout').then(m => ({ default: m.DashboardLayout })));
 const MyAccountPage = lazy(() => import('@/pages/dashboard/MyAccountPage').then(m => ({ default: m.MyAccountPage })));
-const TasksPage = lazy(() => import('@/pages/dashboard/TasksPage').then(m => ({ default: m.TasksPage })));
+const HomePage = lazy(() => import('@/pages/dashboard/HomePage').then(m => ({ default: m.HomePage })));
 const MySubmissionsPage = lazy(() => import('@/pages/dashboard/MySubmissionsPage').then(m => ({ default: m.MySubmissionsPage })));
 const TaskDetailPage = lazy(() => import('@/pages/dashboard/TaskDetailPage').then(m => ({ default: m.TaskDetailPage })));
 const WalletPage = lazy(() => import('@/pages/dashboard/WalletPage').then(m => ({ default: m.WalletPage })));
@@ -24,7 +24,7 @@ const ReferralsPage = lazy(() => import('@/pages/dashboard/ReferralsPage').then(
 const WithdrawPage = lazy(() => import('@/pages/dashboard/WithdrawPage').then(m => ({ default: m.WithdrawPage })));
 const NotificationsPage = lazy(() => import('@/pages/dashboard/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
 const DashboardSupportPage = lazy(() => import('@/pages/dashboard/SupportPage').then(m => ({ default: m.SupportPage })));
-const OffersPage = lazy(() => import('@/pages/dashboard/OffersPage').then(m => ({ default: m.OffersPage })));
+const FeedbackPage = lazy(() => import('@/pages/dashboard/FeedbackPage').then(m => ({ default: m.FeedbackPage })));
 const TicketDetailPage = lazy(() => import('@/pages/dashboard/TicketDetailPage').then(m => ({ default: m.TicketDetailPage })));
 
 const AdminLayout = lazy(() => import('@/components/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -91,9 +91,11 @@ export default function App() {
 
               {/* User dashboard (protected) */}
               <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-                <Route index element={<MyAccountPage />} />
+                <Route index element={<HomePage />} />
+                <Route path="home" element={<HomePage />} />
                 <Route path="account" element={<MyAccountPage />} />
-                <Route path="tasks" element={<TasksPage />} />
+                <Route path="tasks" element={<Navigate to="/dashboard/home" replace />} />
+                <Route path="offers" element={<Navigate to="/dashboard/home" replace />} />
                 <Route path="submissions" element={<MySubmissionsPage />} />
                 <Route path="tasks/:id" element={<TaskDetailPage />} />
                 <Route path="wallet" element={<WalletPage />} />
@@ -103,8 +105,7 @@ export default function App() {
                 <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="support" element={<DashboardSupportPage />} />
                 <Route path="support/:id" element={<TicketDetailPage />} />
-                <Route path="feedback" element={<Navigate to="/dashboard/support?tab=feedback" replace />} />
-                <Route path="offers" element={<OffersPage />} />
+                <Route path="feedback" element={<FeedbackPage />} />
               </Route>
 
               {/* Admin panel (protected + admin) */}
