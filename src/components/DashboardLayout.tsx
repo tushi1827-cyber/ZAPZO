@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, ClipboardList, Wallet, Users,
-  Menu, LogOut, Shield, Zap, Ban, Bell, FileCheck,
-  LifeBuoy, MessageCircle, MessageSquare, Sparkles,
+  Menu, LogOut, Shield, Zap, Ban, Bell,
+  LifeBuoy, MessageCircle, MessageSquare,
   ShieldAlert, AlertCircle, ChevronDown, ChevronRight, UserCircle,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -15,12 +15,10 @@ import {
 type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
 
 const mainNav: NavItem[] = [
-  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
-  { to: '/dashboard/tasks', label: 'Browse Tasks', icon: ClipboardList },
-  { to: '/dashboard/offers', label: 'Earn with Offers', icon: Sparkles },
-  { to: '/dashboard/submissions', label: 'My Submissions', icon: FileCheck },
+  { to: '/dashboard/tasks', label: 'Tasks', icon: ClipboardList },
   { to: '/dashboard/wallet', label: 'My Wallet', icon: Wallet },
   { to: '/dashboard/referrals', label: 'Referrals', icon: Users },
+  { to: '/dashboard/account', label: 'My Account', icon: UserCircle },
 ];
 
 type HelpSubItem = { to: string; label: string; icon: typeof LifeBuoy; match: string };
