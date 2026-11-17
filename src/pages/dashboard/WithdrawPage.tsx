@@ -433,24 +433,24 @@ export function WithdrawPage() {
                           type="button"
                           onClick={() => handleMethodChange(opt.value)}
                           disabled={hasPending}
-                          className={`relative flex min-w-0 flex-col items-start gap-2.5 rounded-xl border-2 p-3 text-left transition-all duration-200 ${
+                          className={`relative flex w-full min-w-0 flex-col items-start gap-2.5 overflow-hidden rounded-xl border-2 p-3 text-left transition-all duration-200 ${
                             selected
                               ? 'border-success-500 bg-success-50/70'
                               : 'border-gray-200 bg-white hover:border-success-300 hover:bg-success-50/30'
                           } ${hasPending ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         >
                           {selected && (
-                            <span className="absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-success-600 text-white ring-2 ring-white">
+                            <span className="absolute -right-2 -top-2 z-10 grid h-6 w-6 place-items-center rounded-full bg-success-600 text-white ring-2 ring-white">
                               <Check className="h-3.5 w-3.5" />
                             </span>
                           )}
                           <MethodIcon method={opt.value} />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold leading-5 text-gray-900">{opt.label}</p>
-                            <p className="mt-1 line-clamp-2 text-xs leading-4 text-gray-500">{opt.description}</p>
+                          <div className="w-full min-w-0">
+                            <p className="break-words text-sm font-semibold leading-5 text-gray-900">{opt.label}</p>
+                            <p className="mt-1 break-words text-xs leading-4 text-gray-500">{opt.description}</p>
                           </div>
                           {opt.isGiftCard && (
-                            <span className="mt-auto inline-flex items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
+                            <span className="mt-auto inline-flex shrink-0 items-center gap-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success-700 ring-1 ring-success-200">
                               <Gift className="h-2.5 w-2.5" /> Gift Card
                             </span>
                           )}
